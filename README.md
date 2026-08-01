@@ -16,7 +16,7 @@ This repository is the proof-of-concept implementation supporting the research a
 - [API Overview](#api-overview)
 - [Evaluation Framework](#evaluation-framework)
 - [Local Development](#local-development)
-- [Deployment on Railway](#deployment-on-railway)
+- [Deployment](#deployment)
 - [Environment Variables](#environment-variables)
 - [Roadmap](#roadmap)
 
@@ -34,6 +34,10 @@ Many African communities have historically relied on elders and oral tradition t
 
 Theoretical grounding: **Graph Theory** (individuals as vertices, relationships as edges, shortest-path computation for relatedness), **Social Network Theory** (relationships as networks), and the **Information Systems Success Model** (used for the usability/effectiveness evaluation in Chapter 4).
 
+### Graph-based without Neo4j
+
+Removing Neo4j does **not** stop the framework from being graph-based. The system remains graph-based because the domain is still modeled as vertices (`Person`, `Family`, `Clan`) and edges (`CHILD_OF`, `PARENT_OF`, `MARRIED_TO`, `SIBLING_OF`, `BELONGS_TO`), and the kinship engine still performs graph traversal, common-ancestor discovery, and shortest-path relatedness computation. PostgreSQL becomes the persistence layer for the graph, using normalized node and edge tables plus recursive queries/application-level BFS instead of Cypher.
+
 ## Architecture
 
 ```mermaid
@@ -42,8 +46,8 @@ flowchart TB
         WEB["React SPA<br/>(Vite + TypeScript)"]
     end
 
-    subgraph Edge["Railway Edge"]
-        LB["Railway Public Networking<br/>(HTTPS, custom domain)"]
+    subgraph Edge["Public Edge"]
+        LB["Web/API Public Endpoints<br/>(HTTPS, custom domain)"]
     end
 
     subgraph API["Application Layer — FastAPI Service"]
@@ -62,10 +66,9 @@ flowchart TB
     end
 
     subgraph Data["Data Layer"]
-        NEO[("Neo4j<br/>Graph DB — Person, Family, Clan nodes<br/>CHILD_OF, MARRIED_TO, SIBLING_OF edges")]
-        PG[("PostgreSQL<br/>Users, Auth, Audit Log,<br/>Evaluation Metrics")]
-        REDIS[("Redis<br/>Cache + Celery broker + Rate limiting")]
-        BLOB["Object Storage<br/>(Railway Volume / S3-compatible)<br/>Documents, tree exports, photos"]
+        PG[("PostgreSQL<br/>Graph-modeled lineage tables,<br/>Users, Auth, Audit Log,<br/>Evaluation Metrics")]
+        REDIS[("Upstash Redis<br/>Cache + Celery/RQ broker + Rate limiting")]
+        BLOB["Object Storage<br/>(S3-compatible)<br/>Documents, tree exports, photos"]
     end
 
     subgraph External["External / Optional"]
@@ -80,15 +83,14 @@ flowchart TB
     GATEWAY --> EVAL
 
     AUTH --> PG
-    PERSON --> NEO
     PERSON --> PG
-    TREE --> NEO
-    KINSHIP --> NEO
+    TREE --> PG
+    KINSHIP --> PG
     KINSHIP --> REDIS
     EVAL --> PG
 
     PERSON -.enqueue.-> QUEUE
-    QUEUE --> BULK --> NEO
+    QUEUE --> BULK --> PG
     NOTIFY --> SMTP
     KINSHIP -.high-risk match.-> NOTIFY
 
@@ -99,7 +101,7 @@ flowchart TB
     classDef data fill:#111827,stroke:#34d399,color:#f9fafb
     classDef client fill:#111827,stroke:#f472b6,color:#f9fafb
     class GATEWAY,AUTH,PERSON,TREE,KINSHIP,NOTIFY,EVAL,QUEUE,BULK svc
-    class NEO,PG,REDIS,BLOB data
+    class PG,REDIS,BLOB data
     class WEB client
 ```
 
@@ -111,8 +113,8 @@ sequenceDiagram
     participant FE as React SPA
     participant API as FastAPI Gateway
     participant KIN as Kinship Engine
-    participant NEO as Neo4j
-    participant CACHE as Redis Cache
+    participant PG as PostgreSQL Graph Tables
+    participant CACHE as Upstash Redis Cache
 
     User->>FE: Select Person A, Person B
     FE->>API: POST /api/v1/kinship/verify {personA, personB}
@@ -121,8 +123,8 @@ sequenceDiagram
     alt cache hit
         CACHE-->>KIN: cached relationship path
     else cache miss
-        KIN->>NEO: shortestPath / common ancestor query (Cypher)
-        NEO-->>KIN: path, common ancestor, degree
+        KIN->>PG: recursive CTE / adjacency-list query
+        PG-->>KIN: path, common ancestor, degree
         KIN->>CACHE: store result (TTL)
     end
     KIN->>KIN: classify degree vs threshold
@@ -136,7 +138,7 @@ sequenceDiagram
 This is the core scholarly contribution. Given Person A and Person B:
 
 1. **Find common ancestor(s)** — traverse `CHILD_OF` / `PARENT_OF` edges upward from both A and B in the graph until a shared ancestor node is found (or none exists within a bounded depth).
-2. **Calculate relationship path** — compute the shortest path between A and B through the ancestor graph (Neo4j Cypher `shortestPath`, or BFS if running on the relational fallback).
+2. **Calculate relationship path** — compute the shortest path between A and B through the ancestor graph using PostgreSQL recursive CTEs and/or an application-level BFS over indexed relationship edges.
 3. **Determine degree of relatedness** — derive a numeric degree from path length and generation offset.
 4. **Compare against threshold** — classify the pair against a configurable eligibility threshold.
 
@@ -153,17 +155,17 @@ This is the core scholarly contribution. Given Person A and Person B:
 
 | Layer | Choice | Notes |
 |---|---|---|
-| Frontend | React + Vite + TypeScript | SPA, deployed as a Railway static/Node service |
+| Frontend | React + Vite + TypeScript | SPA, deployable as a static/Node service |
 | Styling | Tailwind CSS | Utility-first, fast to theme |
 | Tree/Graph visualization | React Flow or D3.js | For interactive family tree rendering |
 | Backend | FastAPI (Python) | Async, OpenAPI docs auto-generated, Pydantic v2 validation |
-| Graph database | Neo4j | Native graph storage for Person/Family/Clan nodes and relationship edges — this is where the algorithm's novelty lives |
-| Relational database | PostgreSQL | Users, auth, audit trail, evaluation metrics (accuracy/response-time/SUS logs) |
-| Cache / broker | Redis | Kinship-path caching, rate limiting, Celery/RQ broker |
+| Graph-modeled persistence | PostgreSQL | Stores persons/clans/families as entities and kinship links as indexed edge tables; the algorithm still treats the data as a graph |
+| Relational database | PostgreSQL | Users, auth, audit trail, lineage graph tables, evaluation metrics (accuracy/response-time/SUS logs) |
+| Cache / broker | Upstash Redis Free tier | Kinship-path caching, rate limiting, Celery/RQ broker where supported |
 | Background jobs | Celery or RQ | Bulk lineage import, notification dispatch |
 | Auth | JWT (OAuth2 password flow via FastAPI security) | Roles: Admin, Community Elder, Registrar, User |
-| File/object storage | Railway Volume or S3-compatible bucket | Family tree exports (PDF/PNG), supporting documents |
-| Hosting | Railway | Every service below maps to a Railway service |
+| File/object storage | S3-compatible bucket | Family tree exports (PDF/PNG), supporting documents |
+| Hosting | Hugging Face Spaces for API; static hosting for web | FastAPI runs in the API Space; web can point to the Space URL |
 
 ## Monorepo Structure
 
@@ -172,8 +174,7 @@ kinship-verification-platform/
 ├── README.md
 ├── .gitignore
 ├── .editorconfig
-├── railway.json                      # root Railway config (if using a single monorepo project)
-├── docker-compose.yml                # local dev: postgres, neo4j, redis
+├── docker-compose.yml                # local dev: postgres, redis-compatible cache
 ├── turbo.json                        # optional: Turborepo pipeline if using pnpm workspaces
 ├── package.json                      # root workspace manifest (pnpm workspaces)
 ├── pnpm-workspace.yaml
@@ -181,7 +182,6 @@ kinship-verification-platform/
 ├── apps/
 │   ├── web/                          # React frontend
 │   │   ├── Dockerfile
-│   │   ├── railway.toml
 │   │   ├── package.json
 │   │   ├── vite.config.ts
 │   │   ├── tsconfig.json
@@ -230,7 +230,7 @@ kinship-verification-platform/
 │   │
 │   └── api/                          # FastAPI backend
 │       ├── Dockerfile
-│       ├── railway.toml
+│       ├── README.md                  # Hugging Face Space deployment notes
 │       ├── pyproject.toml            # or requirements.txt
 │       ├── alembic.ini
 │       ├── alembic/
@@ -255,15 +255,16 @@ kinship-verification-platform/
 │       │   │   └── exceptions.py
 │       │   ├── db/
 │       │   │   ├── postgres.py       # SQLAlchemy engine/session
-│       │   │   ├── neo4j.py          # Neo4j driver session management
 │       │   │   └── redis_client.py
-│       │   ├── models/               # SQLAlchemy models (Postgres side: users, audit, metrics)
+│       │   ├── models/               # SQLAlchemy models (users, lineage graph, audit, metrics)
 │       │   │   ├── user.py
+│       │   │   ├── person.py
+│       │   │   ├── kinship_edge.py
 │       │   │   └── evaluation_log.py
-│       │   ├── graph/                # Neo4j-facing domain layer
+│       │   ├── graph/                # Postgres-backed graph traversal domain layer
 │       │   │   ├── person_repository.py
 │       │   │   ├── family_repository.py
-│       │   │   └── cypher_queries.py
+│       │   │   └── traversal_queries.py
 │       │   ├── schemas/              # Pydantic request/response models
 │       │   │   ├── person.py
 │       │   │   ├── family.py
@@ -311,21 +312,19 @@ kinship-verification-platform/
 
 ## Data Model
 
-Graph model (Neo4j) — the primary data store for lineage:
+PostgreSQL stores both the application records and the graph-modeled lineage data. The lineage graph is represented with normalized entity tables and indexed edge tables, so the framework remains graph-based even without a dedicated graph database.
 
-**Nodes**
+**Graph vertices**
 - `Person` — id, full_name, gender, date_of_birth, is_deceased, clan_id, notes
 - `Family` — id, family_name, origin_community
 - `Clan` — id, clan_name, region
 
-**Relationships**
-- `(:Person)-[:CHILD_OF]->(:Person)`
-- `(:Person)-[:PARENT_OF]->(:Person)`
-- `(:Person)-[:MARRIED_TO]->(:Person)`
-- `(:Person)-[:SIBLING_OF]->(:Person)`
-- `(:Person)-[:BELONGS_TO]->(:Clan)`
+**Graph edges**
+- `kinship_edges` — id, source_person_id, target_person_id, relationship_type, confidence_score, recorded_by, created_at
+- Supported `relationship_type` values: `CHILD_OF`, `PARENT_OF`, `MARRIED_TO`, `SIBLING_OF`, `BELONGS_TO_CLAN`
+- Indexes: `(source_person_id, relationship_type)`, `(target_person_id, relationship_type)`, and `(source_person_id, target_person_id, relationship_type)` for traversal and duplicate prevention
 
-Relational model (PostgreSQL) — everything that isn't the lineage graph itself:
+**Application tables**
 
 - `users` — auth accounts (Admin, Registrar, Elder, standard User), hashed passwords, roles
 - `audit_log` — who registered/edited which person/relationship, when
@@ -361,12 +360,12 @@ The platform is built to directly produce the four evaluation dimensions from th
 
 1. **Relationship Detection Accuracy** — `accuracy = correct_detections / total_tests`, computed against an expert-validated test dataset seeded via `scripts/seed_data.py`.
 2. **Response Time** — average and max query time for `/api/v1/kinship/verify`, logged per request into `evaluation_metrics` and exposed via `/api/v1/evaluation/performance`.
-3. **Scalability** — load-tested at 100, 1,000, and 10,000 `Person` nodes using `scripts/load_test.py` against the Railway-hosted Neo4j instance.
+3. **Scalability** — load-tested at 100, 1,000, and 10,000 `Person` vertices using `scripts/load_test.py` against the PostgreSQL edge-table graph and API deployment.
 4. **Usability (SUS)** — a 10-item System Usability Scale survey collected in-app after user testing sessions, aggregated by `/api/v1/evaluation/sus/summary` (interpretation: ≥68 acceptable, ≥80 excellent).
 
 ## Local Development
 
-Prerequisites: Node 20+, pnpm, Python 3.11+, Docker.
+Prerequisites: Node 20+, pnpm, Python 3.11+, uv, Docker.
 
 ```bash
 # 1. Clone and install
@@ -374,15 +373,17 @@ git clone <repo-url> kinship-verification-platform
 cd kinship-verification-platform
 pnpm install
 
-# 2. Start local infra (Postgres, Neo4j, Redis)
+# 2. Start local infra (Postgres and Redis-compatible cache)
 docker compose up -d
 
 # 3. Backend
 cd apps/api
-python -m venv .venv && source .venv/bin/activate
-pip install -r requirements.txt
-alembic upgrade head
-uvicorn app.main:app --reload --port 8000
+uv sync
+uv run alembic upgrade head
+uv run uvicorn app.main:app --reload --port 8000
+
+# Run API tests
+uv run pytest
 
 # 4. Frontend (new terminal)
 cd apps/web
@@ -391,49 +392,46 @@ pnpm dev
 
 - Frontend: http://localhost:5173
 - API docs: http://localhost:8000/docs
-- Neo4j Browser: http://localhost:7474
+- PostgreSQL: configured via `DATABASE_URL`
 
-## Deployment on Railway
+## Deployment
 
-This monorepo maps cleanly onto Railway services — each box in the architecture diagram's Data and Application layers is a Railway service:
+The API is intended to run on **Hugging Face Spaces**, with PostgreSQL as the persistent database and the **free Upstash Redis** tier for caching/rate limiting/background-job coordination. The frontend can be deployed to any static host and configured to call the Hugging Face Space API URL.
 
-| Railway Service | Source | Notes |
+| Component | Host | Notes |
 |---|---|---|
-| `web` | `apps/web` (root directory set in Railway) | Build with Vite, served via a lightweight Node/`serve` process or static output |
-| `api` | `apps/api` (root directory set in Railway) | Dockerfile-based deploy, exposes port via `$PORT` |
-| `postgres` | Railway's built-in PostgreSQL plugin | One-click provision, injects `DATABASE_URL` |
-| `redis` | Railway's built-in Redis plugin | Injects `REDIS_URL` |
-| `neo4j` | Railway template / Docker image (`neo4j:5-community`) | Deploy from the Neo4j Docker image; persist data with a Railway Volume |
-| `worker` | `apps/api` (same image, different start command: `celery -A app.workers.celery_app worker`) | Separate Railway service reusing the API image |
+| `web` | Static hosting provider | Build with Vite; set `VITE_API_BASE_URL` to the Hugging Face Space API URL |
+| `api` | Hugging Face Spaces | Docker Space running FastAPI/Uvicorn; exposes `/docs` and `/api/v1/*` |
+| `postgres` | Managed PostgreSQL provider | Stores auth, audit, evaluation, and graph-modeled lineage tables |
+| `redis` | Upstash Redis Free tier | Provides `REDIS_URL` for cache, rate limiting, and lightweight queue/broker use |
+| `worker` | Optional Hugging Face Space or external worker | Uses the same API image with a worker start command if background jobs are needed |
+| `object storage` | S3-compatible bucket | Stores documents, family tree exports, and photos |
 
 Steps:
 
-1. Create a Railway project, add each row above as its own service, pointing Railway at the relevant subdirectory (`apps/web`, `apps/api`) using **root directory** settings so it stays one repo.
-2. Provision PostgreSQL and Redis from Railway's plugin marketplace — no Dockerfile needed for these.
-3. Deploy Neo4j from its official Docker image as a Railway service, attach a Railway Volume at `/data` for persistence.
-4. Set environment variables (below) on each service, referencing Railway's auto-generated connection strings (`${{Postgres.DATABASE_URL}}`, `${{Redis.REDIS_URL}}`) and the Neo4j service's internal URL.
-5. Set `web`'s `VITE_API_BASE_URL` to the `api` service's public Railway domain.
-6. Enable Railway's public networking on `web` and `api`; keep `postgres`, `redis`, and `neo4j` on private networking only.
+1. Create a Hugging Face Docker Space for `apps/api`, using the API Dockerfile or a Space-level Dockerfile that starts `uvicorn app.main:app --host 0.0.0.0 --port 7860`.
+2. Provision a managed PostgreSQL database and run Alembic migrations to create the application tables and graph edge tables.
+3. Create a free Upstash Redis database and copy its Redis connection string into the Space secrets.
+4. Add the environment variables below as Hugging Face Space secrets, including `DATABASE_URL`, `REDIS_URL`, `JWT_SECRET`, and `CORS_ORIGINS`.
+5. Deploy the frontend separately and set `VITE_API_BASE_URL` to `https://<space-owner>-<space-name>.hf.space/api/v1`.
+6. Configure `CORS_ORIGINS` on the API Space to allow the deployed frontend origin.
 
 ## Environment Variables
 
 **`apps/api/.env`**
 ```
 DATABASE_URL=postgresql+asyncpg://user:pass@host:5432/kinship
-NEO4J_URI=bolt://neo4j:7687
-NEO4J_USER=neo4j
-NEO4J_PASSWORD=changeme
-REDIS_URL=redis://redis:6379/0
+REDIS_URL=rediss://default:password@host.upstash.io:6379
 JWT_SECRET=changeme
 JWT_ALGORITHM=HS256
 ACCESS_TOKEN_EXPIRE_MINUTES=60
 RELATEDNESS_THRESHOLD_DEGREE=2
-CORS_ORIGINS=https://your-web-service.up.railway.app
+CORS_ORIGINS=https://your-frontend-domain.example
 ```
 
 **`apps/web/.env`**
 ```
-VITE_API_BASE_URL=https://your-api-service.up.railway.app/api/v1
+VITE_API_BASE_URL=https://your-huggingface-space.hf.space/api/v1
 ```
 
 ## Roadmap

@@ -1,0 +1,69 @@
+# Dependencies
+node_modules/
+.pnpm-store/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.coverage
+coverage.xml
+htmlcov/
+.venv/
+venv/
+env/
+ENV/
+
+# Environment and secrets
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.crt
+
+# Build outputs
+dist/
+build/
+out/
+.turbo/
+.vite/
+
+# Logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Local databases and uploads
+*.sqlite
+*.sqlite3
+*.db
+uploads/
+media/
+storage/
+
+# Alembic/runtime artifacts
+apps/api/alembic/versions/*.pyc
+
+# Test and coverage outputs
+coverage/
+test-results/
+playwright-report/
+
+# Editors and OS files
+.idea/
+.vscode/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Hugging Face / deployment local state
+.huggingface/
+.cache/
