@@ -31,6 +31,7 @@ build/
 out/
 .turbo/
 .vite/
+*.tsbuildinfo
 
 # Logs
 *.log
@@ -67,3 +68,6 @@ desktop.ini
 # Hugging Face / deployment local state
 .huggingface/
 .cache/
+
+# Local reference material
+source/
