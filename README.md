@@ -43,7 +43,7 @@ Removing Neo4j does **not** stop the framework from being graph-based. The syste
 ```mermaid
 flowchart TB
     subgraph Client["Client Layer"]
-        WEB["React SPA<br/>(Vite + TypeScript)"]
+        WEB["Next.js App Router<br/>(React + TypeScript)"]
     end
 
     subgraph Edge["Public Edge"]
@@ -110,7 +110,7 @@ flowchart TB
 ```mermaid
 sequenceDiagram
     actor User as User (Frontend)
-    participant FE as React SPA
+    participant FE as Next.js Web
     participant API as FastAPI Gateway
     participant KIN as Kinship Engine
     participant PG as PostgreSQL Graph Tables
@@ -155,9 +155,9 @@ This is the core scholarly contribution. Given Person A and Person B:
 
 | Layer | Choice | Notes |
 |---|---|---|
-| Frontend | React + Vite + TypeScript | SPA, deployable as a static/Node service |
-| Styling | Tailwind CSS | Utility-first, fast to theme |
-| Tree/Graph visualization | React Flow or D3.js | For interactive family tree rendering |
+| Frontend | Next.js 15 (App Router) + React 19 + TypeScript | Server-rendered/prerendered pages, deployable as a Node service |
+| Styling | Tailwind CSS v4 | `@theme` design tokens in `app/globals.css` |
+| Tree/Graph visualization | React Flow or D3.js | For interactive family tree rendering (current build renders edge rows) |
 | Backend | FastAPI (Python) | Async, OpenAPI docs auto-generated, Pydantic v2 validation |
 | Graph-modeled persistence | PostgreSQL | Stores persons/clans/families as entities and kinship links as indexed edge tables; the algorithm still treats the data as a graph |
 | Relational database | PostgreSQL | Users, auth, audit trail, lineage graph tables, evaluation metrics (accuracy/response-time/SUS logs) |
@@ -165,7 +165,7 @@ This is the core scholarly contribution. Given Person A and Person B:
 | Background jobs | Celery or RQ | Bulk lineage import, notification dispatch |
 | Auth | JWT (OAuth2 password flow via FastAPI security) | Roles: Admin, Community Elder, Registrar, User |
 | File/object storage | S3-compatible bucket | Family tree exports (PDF/PNG), supporting documents |
-| Hosting | Hugging Face Spaces for API; static hosting for web | FastAPI runs in the API Space; web can point to the Space URL |
+| Hosting | Hugging Face Spaces for API; Node host (Vercel/Docker) for web | FastAPI runs in the API Space; web is a Next.js server pointing at the Space URL |
 
 ## Monorepo Structure
 
@@ -180,53 +180,42 @@ kinship-verification-platform/
 ├── pnpm-workspace.yaml
 │
 ├── apps/
-│   ├── web/                          # React frontend
+│   ├── web/                          # Next.js 15 App Router frontend
 │   │   ├── Dockerfile
 │   │   ├── package.json
-│   │   ├── vite.config.ts
+│   │   ├── next.config.ts
+│   │   ├── postcss.config.mjs        # @tailwindcss/postcss
 │   │   ├── tsconfig.json
-│   │   ├── index.html
 │   │   ├── public/
 │   │   │   └── favicon.svg
-│   │   └── src/
-│   │       ├── main.tsx
-│   │       ├── App.tsx
-│   │       ├── router.tsx
-│   │       ├── api/
-│   │       │   ├── client.ts         # axios/fetch wrapper, base URL from env
-│   │       │   ├── persons.ts
-│   │       │   ├── families.ts
-│   │       │   ├── kinship.ts
-│   │       │   └── auth.ts
-│   │       ├── components/
-│   │       │   ├── layout/
-│   │       │   │   ├── Navbar.tsx
-│   │       │   │   └── Sidebar.tsx
-│   │       │   ├── family-tree/
-│   │       │   │   ├── FamilyTreeCanvas.tsx     # React Flow / D3 render
-│   │       │   │   ├── PersonNode.tsx
-│   │       │   │   └── RelationshipEdge.tsx
-│   │       │   ├── kinship/
-│   │       │   │   ├── VerificationForm.tsx
-│   │       │   │   ├── VerdictBanner.tsx
-│   │       │   │   └── RelationshipPath.tsx
-│   │       │   └── ui/                          # shared buttons, inputs, modals
-│   │       ├── pages/
-│   │       │   ├── Dashboard.tsx
-│   │       │   ├── RegisterPerson.tsx
-│   │       │   ├── FamilyTreePage.tsx
-│   │       │   ├── VerifyEligibility.tsx
-│   │       │   ├── Login.tsx
-│   │       │   └── AdminEvaluation.tsx          # SUS scores, accuracy/perf dashboards
-│   │       ├── hooks/
-│   │       │   ├── useAuth.ts
-│   │       │   └── useKinshipVerification.ts
-│   │       ├── store/                            # Zustand or Redux Toolkit
-│   │       │   └── authStore.ts
-│   │       ├── types/
-│   │       │   └── index.ts
-│   │       └── styles/
-│   │           └── tailwind.css
+│   │   ├── app/                      # file-based routes
+│   │   │   ├── layout.tsx            # root layout, wraps <SessionProvider>
+│   │   │   ├── globals.css           # Tailwind v4 import + @theme tokens
+│   │   │   ├── page.tsx              # marketing landing
+│   │   │   ├── signin/page.tsx       # login + register (JWT auth)
+│   │   │   └── (app)/                # authenticated route group
+│   │   │       ├── layout.tsx        # <AppGate><AppShell>…
+│   │   │       ├── dashboard/page.tsx
+│   │   │       ├── register/page.tsx
+│   │   │       ├── tree/page.tsx
+│   │   │       ├── verify/page.tsx
+│   │   │       └── evaluation/page.tsx        # SUS scores, accuracy/perf dashboards
+│   │   ├── components/
+│   │   │   ├── shell/                # AppShell, AppGate, LeftRail, BottomNav, navItems
+│   │   │   ├── family-tree/
+│   │   │   │   ├── FamilyTreeCanvas.tsx     # React Flow / D3 render
+│   │   │   │   ├── PersonNode.tsx
+│   │   │   │   └── RelationshipEdge.tsx
+│   │   │   ├── kinship/
+│   │   │   │   ├── VerificationForm.tsx
+│   │   │   │   ├── VerdictBanner.tsx
+│   │   │   │   └── RelationshipPath.tsx
+│   │   │   └── ui/                          # PersonPicker (search-as-you-type)
+│   │   └── lib/
+│   │       ├── api.ts                # fetch wrapper, base URL from env, Bearer token
+│   │       ├── session.tsx           # JWT session context, persisted to localStorage
+│   │       ├── types.ts              # types mirroring the FastAPI schemas
+│   │       └── constants.ts
 │   │
 │   └── api/                          # FastAPI backend
 │       ├── Dockerfile
@@ -385,22 +374,21 @@ uv run uvicorn app.main:app --reload --port 8000
 # Run API tests
 uv run pytest
 
-# 4. Frontend (new terminal)
-cd apps/web
-pnpm dev
+# 4. Frontend (new terminal, from the repo root)
+pnpm dev:web
 ```
 
-- Frontend: http://localhost:5173
+- Frontend: http://localhost:3000
 - API docs: http://localhost:8000/docs
 - PostgreSQL: configured via `DATABASE_URL`
 
 ## Deployment
 
-The API is intended to run on **Hugging Face Spaces**, with PostgreSQL as the persistent database and the **free Upstash Redis** tier for caching/rate limiting/background-job coordination. The frontend can be deployed to any static host and configured to call the Hugging Face Space API URL.
+The API is intended to run on **Hugging Face Spaces**, with PostgreSQL as the persistent database and the **free Upstash Redis** tier for caching/rate limiting/background-job coordination. The frontend is a Next.js server and can be deployed to any Node host (Vercel, or the provided Dockerfile) configured to call the Hugging Face Space API URL.
 
 | Component | Host | Notes |
 |---|---|---|
-| `web` | Static hosting provider | Build with Vite; set `VITE_API_BASE_URL` to the Hugging Face Space API URL |
+| `web` | Node host (Vercel / Docker) | Next.js server; set `NEXT_PUBLIC_API_BASE_URL` to the Hugging Face Space API URL |
 | `api` | Hugging Face Spaces | Docker Space running FastAPI/Uvicorn; exposes `/docs` and `/api/v1/*` |
 | `postgres` | Managed PostgreSQL provider | Stores auth, audit, evaluation, and graph-modeled lineage tables |
 | `redis` | Upstash Redis Free tier | Provides `REDIS_URL` for cache, rate limiting, and lightweight queue/broker use |
@@ -413,7 +401,7 @@ Steps:
 2. Provision a managed PostgreSQL database and run Alembic migrations to create the application tables and graph edge tables.
 3. Create a free Upstash Redis database and copy its Redis connection string into the Space secrets.
 4. Add the environment variables below as Hugging Face Space secrets, including `DATABASE_URL`, `REDIS_URL`, `JWT_SECRET`, and `CORS_ORIGINS`.
-5. Deploy the frontend separately and set `VITE_API_BASE_URL` to `https://<space-owner>-<space-name>.hf.space/api/v1`.
+5. Deploy the frontend separately and set `NEXT_PUBLIC_API_BASE_URL` to `https://<space-owner>-<space-name>.hf.space/api/v1`. Note `NEXT_PUBLIC_*` vars are inlined at build time, so rebuild the web app after changing it (the Dockerfile also accepts it as a build arg).
 6. Configure `CORS_ORIGINS` on the API Space to allow the deployed frontend origin.
 
 ## Environment Variables
@@ -431,7 +419,7 @@ CORS_ORIGINS=https://your-frontend-domain.example
 
 **`apps/web/.env`**
 ```
-VITE_API_BASE_URL=https://your-huggingface-space.hf.space/api/v1
+NEXT_PUBLIC_API_BASE_URL=https://your-huggingface-space.hf.space/api/v1
 ```
 
 ## Roadmap

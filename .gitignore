@@ -31,6 +31,8 @@ build/
 out/
 .turbo/
 .vite/
+.next/
+next-env.d.ts
 *.tsbuildinfo
 
 # Logs

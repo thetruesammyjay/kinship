@@ -19,7 +19,9 @@ class Settings(BaseSettings):
     access_token_expire_minutes: int = 60
     relatedness_threshold_degree: int = 2
 
-    cors_origins: list[str] = Field(default_factory=lambda: ["http://localhost:5173"])
+    cors_origins: list[str] = Field(
+        default_factory=lambda: ["http://localhost:3000", "http://localhost:5173"]
+    )
 
     model_config = SettingsConfigDict(
         env_file=".env",
