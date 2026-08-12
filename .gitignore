@@ -73,3 +73,6 @@ desktop.ini
 
 # Local reference material
 source/
+
+# Word documents
+*.docx
