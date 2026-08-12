@@ -4,7 +4,8 @@ from fastapi import APIRouter, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db.postgres import get_db_session
-from app.dependencies import get_evaluation_service
+from app.dependencies import get_current_user, get_evaluation_service
+from app.models.user import User
 from app.services.evaluation_service import EvaluationService
 
 router = APIRouter()
@@ -27,7 +28,9 @@ async def get_performance(
 
 
 @router.post("/sus")
-async def submit_sus_response() -> dict[str, str]:
+async def submit_sus_response(
+    _: Annotated[User, Depends(get_current_user)],
+) -> dict[str, str]:
     return {"status": "accepted"}
 
 

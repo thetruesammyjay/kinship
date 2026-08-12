@@ -38,3 +38,10 @@ def test_register_and_login_user(client: TestClient) -> None:
     )
     assert login_response.status_code == 200
     assert login_response.json()["token_type"] == "bearer"
+
+    me_response = client.get(
+        "/api/v1/auth/me",
+        headers={"Authorization": f"Bearer {login_response.json()['access_token']}"},
+    )
+    assert me_response.status_code == 200
+    assert me_response.json()["email"] == "registrar@example.com"

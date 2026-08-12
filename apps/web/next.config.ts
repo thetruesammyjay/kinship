@@ -12,6 +12,7 @@ const nextConfig: NextConfig = {
   // lucide-react is a barrel package; rewrite to direct imports so every page
   // doesn't pull thousands of icon modules into its compile.
   experimental: {
+    cpus: 1,
     optimizePackageImports: ["lucide-react"],
   },
 };

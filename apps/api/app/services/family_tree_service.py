@@ -11,8 +11,11 @@ class FamilyTreeService:
         self.person_service = person_service
 
     async def build_tree(self, session: AsyncSession, family_id: UUID) -> FamilyTreeRead:
-        people = await self.person_service.search_people(session)
-        relationships = await self.person_service.relationships(session)
+        people = await self.person_service.search_people(session, family_id=family_id)
+        relationships = await self.person_service.relationships_for_people(
+            session,
+            {str(person.id) for person in people},
+        )
         return FamilyTreeRead(
             family_id=family_id,
             nodes=[FamilyTreeNode(id=person.id, label=person.full_name) for person in people],

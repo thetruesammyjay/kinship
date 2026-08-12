@@ -22,6 +22,13 @@ export type PersonSearchResult = {
   total: number;
 };
 
+export type FamilyRead = {
+  id: string;
+  family_name: string;
+  origin_community: string | null;
+  clan_id: string | null;
+};
+
 export type RelationshipRead = {
   source_person_id: string;
   target_person_id: string;
@@ -47,6 +54,7 @@ export type KinshipVerifyResponse = {
 export type FamilyTreeNode = {
   id: string;
   label: string;
+  kind?: string;
 };
 
 export type FamilyTreeEdge = {

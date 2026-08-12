@@ -1,19 +1,5 @@
 "use client";
 
-/**
- * Client session — "who's signed in" — backed by the FastAPI JWT auth
- * endpoints (POST /auth/login, POST /auth/register). Mirrors the shape of the
- * ChumBucket example's lib/session.tsx, minus the wallet/money concerns:
- *
- *   login(email, pw)          -> POST /auth/login, store {token, email}
- *   register(name, email, pw) -> POST /auth/register, then login()
- *   signOut()                 -> clear the stored session
- *
- * The session persists to localStorage so a refresh keeps you signed in. The
- * API has no /me endpoint yet, so the display identity (email / full name) is
- * whatever was captured at sign-in time.
- */
-
 import { createContext, useCallback, useContext, useEffect, useState } from "react";
 import { apiRequest, SESSION_KEY } from "@/lib/api";
 import type { TokenResponse, UserRead } from "@/lib/types";
@@ -27,50 +13,64 @@ export type Session = {
 
 const GUEST: Session = { status: "guest", token: null, email: "", fullName: "" };
 
-type Ctx = {
+type SessionContextValue = {
   session: Session;
-  ready: boolean; // hydrated from localStorage — safe to make routing decisions
-  busy: boolean; // an auth call is in flight
+  ready: boolean;
+  busy: boolean;
   login: (email: string, password: string) => Promise<void>;
-  register: (fullName: string, email: string, password: string, phoneNumber?: string) => Promise<void>;
+  register: (
+    fullName: string,
+    email: string,
+    password: string,
+    phoneNumber?: string,
+  ) => Promise<void>;
   signOut: () => void;
 };
 
-const SessionContext = createContext<Ctx | null>(null);
+const SessionContext = createContext<SessionContextValue | null>(null);
 
 export function SessionProvider({ children }: { children: React.ReactNode }) {
   const [session, setSession] = useState<Session>(GUEST);
   const [ready, setReady] = useState(false);
   const [busy, setBusy] = useState(false);
 
-  // Hydrate once on mount; localStorage isn't available during SSR.
   useEffect(() => {
-    try {
-      const raw = window.localStorage.getItem(SESSION_KEY);
-      if (raw) {
-        const stored = JSON.parse(raw) as Partial<Session>;
-        if (stored.token) {
-          setSession({
-            status: "signed",
-            token: stored.token,
-            email: stored.email ?? "",
-            fullName: stored.fullName ?? "",
-          });
+    let cancelled = false;
+    (async () => {
+      try {
+        const raw = window.localStorage.getItem(SESSION_KEY);
+        if (raw) {
+          const stored = JSON.parse(raw) as Partial<Session>;
+          if (stored.token) {
+            const user = await apiRequest<UserRead>("/auth/me", {
+              headers: { Authorization: `Bearer ${stored.token}` },
+            });
+            if (!cancelled) {
+              setSession({
+                status: "signed",
+                token: stored.token,
+                email: user.email,
+                fullName: user.full_name,
+              });
+            }
+          }
         }
+      } catch {
+        window.localStorage.removeItem(SESSION_KEY);
+        if (!cancelled) setSession(GUEST);
+      } finally {
+        if (!cancelled) setReady(true);
       }
-    } catch {
-      // corrupt entry — treat as guest
-    }
-    setReady(true);
+    })();
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   const persist = useCallback((next: Session) => {
     setSession(next);
     if (next.status === "signed") {
-      window.localStorage.setItem(
-        SESSION_KEY,
-        JSON.stringify({ token: next.token, email: next.email, fullName: next.fullName }),
-      );
+      window.localStorage.setItem(SESSION_KEY, JSON.stringify(next));
     } else {
       window.localStorage.removeItem(SESSION_KEY);
     }
@@ -84,7 +84,15 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
           method: "POST",
           body: JSON.stringify({ email, password }),
         });
-        persist({ status: "signed", token: access_token, email, fullName: "" });
+        const user = await apiRequest<UserRead>("/auth/me", {
+          headers: { Authorization: `Bearer ${access_token}` },
+        });
+        persist({
+          status: "signed",
+          token: access_token,
+          email: user.email,
+          fullName: user.full_name,
+        });
       } finally {
         setBusy(false);
       }
@@ -109,7 +117,12 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
           method: "POST",
           body: JSON.stringify({ email, password }),
         });
-        persist({ status: "signed", token: access_token, email: user.email, fullName: user.full_name });
+        persist({
+          status: "signed",
+          token: access_token,
+          email: user.email,
+          fullName: user.full_name,
+        });
       } finally {
         setBusy(false);
       }
@@ -126,8 +139,8 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
   );
 }
 
-export function useSession(): Ctx {
-  const ctx = useContext(SessionContext);
-  if (!ctx) throw new Error("useSession must be used inside <SessionProvider>");
-  return ctx;
+export function useSession(): SessionContextValue {
+  const context = useContext(SessionContext);
+  if (!context) throw new Error("useSession must be used inside <SessionProvider>");
+  return context;
 }

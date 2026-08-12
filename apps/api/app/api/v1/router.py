@@ -1,10 +1,20 @@
 from fastapi import APIRouter
 
-from app.api.v1.endpoints import admin, auth, evaluation, families, family_tree, kinship, persons
+from app.api.v1.endpoints import (
+    admin,
+    auth,
+    clans,
+    evaluation,
+    families,
+    family_tree,
+    kinship,
+    persons,
+)
 
 api_router = APIRouter()
 api_router.include_router(auth.router, prefix="/auth", tags=["auth"])
 api_router.include_router(persons.router, prefix="/persons", tags=["persons"])
+api_router.include_router(clans.router, prefix="/clans", tags=["clans"])
 api_router.include_router(families.router, prefix="/families", tags=["families"])
 api_router.include_router(family_tree.router, prefix="/families", tags=["family-tree"])
 api_router.include_router(kinship.router, prefix="/kinship", tags=["kinship"])

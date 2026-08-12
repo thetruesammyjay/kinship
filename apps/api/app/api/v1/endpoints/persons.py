@@ -5,7 +5,8 @@ from fastapi import APIRouter, Depends, Query, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db.postgres import get_db_session
-from app.dependencies import get_person_service
+from app.dependencies import get_current_user, get_person_service
+from app.models.user import User
 from app.schemas.person import (
     PersonCreate,
     PersonRead,
@@ -24,6 +25,7 @@ async def create_person(
     payload: PersonCreate,
     session: Annotated[AsyncSession, Depends(get_db_session)],
     service: Annotated[PersonService, Depends(get_person_service)],
+    _: Annotated[User, Depends(get_current_user)],
 ) -> PersonRead:
     return await service.create_person(session, payload)
 
@@ -53,12 +55,14 @@ async def add_parent(
     payload: RelationshipCreate,
     session: Annotated[AsyncSession, Depends(get_db_session)],
     service: Annotated[PersonService, Depends(get_person_service)],
+    current_user: Annotated[User, Depends(get_current_user)],
 ) -> RelationshipRead:
     return await service.add_relationship(
         session=session,
         source_person_id=person_id,
         target_person_id=payload.target_person_id,
         relationship_type=RelationshipType.child_of,
+        recorded_by=current_user.id,
     )
 
 
@@ -68,10 +72,12 @@ async def add_spouse(
     payload: RelationshipCreate,
     session: Annotated[AsyncSession, Depends(get_db_session)],
     service: Annotated[PersonService, Depends(get_person_service)],
+    current_user: Annotated[User, Depends(get_current_user)],
 ) -> RelationshipRead:
     return await service.add_relationship(
         session=session,
         source_person_id=person_id,
         target_person_id=payload.target_person_id,
         relationship_type=RelationshipType.married_to,
+        recorded_by=current_user.id,
     )

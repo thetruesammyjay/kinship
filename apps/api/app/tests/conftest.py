@@ -33,3 +33,19 @@ async def test_database():
 @pytest.fixture
 def client() -> TestClient:
     return TestClient(app)
+
+
+@pytest.fixture
+def auth_headers(client: TestClient) -> dict[str, str]:
+    credentials = {
+        "email": "registrar@example.com",
+        "password": "correct-horse-battery",
+    }
+    response = client.post(
+        "/api/v1/auth/register",
+        json={"full_name": "Community Registrar", **credentials},
+    )
+    assert response.status_code == 201
+    login = client.post("/api/v1/auth/login", json=credentials)
+    assert login.status_code == 200
+    return {"Authorization": f"Bearer {login.json()['access_token']}"}

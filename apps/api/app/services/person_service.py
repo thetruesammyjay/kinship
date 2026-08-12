@@ -28,8 +28,11 @@ class PersonService:
         self,
         session: AsyncSession,
         query: str | None = None,
+        family_id: UUID | None = None,
     ) -> list[PersonRead]:
         statement = select(Person).order_by(Person.full_name)
+        if family_id is not None:
+            statement = statement.where(Person.family_id == str(family_id))
         if not query:
             result = await session.scalars(statement)
             return [self._to_person_read(person) for person in result.all()]
@@ -52,6 +55,7 @@ class PersonService:
         source_person_id: UUID,
         target_person_id: UUID,
         relationship_type: RelationshipType,
+        recorded_by: str | None = None,
     ) -> RelationshipRead:
         await self.get_person(session, source_person_id)
         await self.get_person(session, target_person_id)
@@ -60,6 +64,7 @@ class PersonService:
             source_person_id=str(source_person_id),
             target_person_id=str(target_person_id),
             relationship_type=relationship_type.value,
+            recorded_by=recorded_by,
         )
         session.add(relationship)
         try:
@@ -81,6 +86,21 @@ class PersonService:
 
     async def relationships(self, session: AsyncSession) -> list[RelationshipRead]:
         result = await session.scalars(select(KinshipEdge))
+        return [self._to_relationship_read(relationship) for relationship in result.all()]
+
+    async def relationships_for_people(
+        self,
+        session: AsyncSession,
+        person_ids: set[str],
+    ) -> list[RelationshipRead]:
+        if not person_ids:
+            return []
+        result = await session.scalars(
+            select(KinshipEdge).where(
+                KinshipEdge.source_person_id.in_(person_ids),
+                KinshipEdge.target_person_id.in_(person_ids),
+            )
+        )
         return [self._to_relationship_read(relationship) for relationship in result.all()]
 
     def _person_payload(self, payload: PersonCreate) -> dict[str, object]:

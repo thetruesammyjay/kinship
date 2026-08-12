@@ -7,10 +7,18 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.exceptions import ApiError
 from app.core.security import create_access_token, hash_password, verify_password
 from app.db.postgres import get_db_session
+from app.dependencies import get_current_user
 from app.models.user import User
 from app.schemas.auth import LoginRequest, RegisterRequest, TokenResponse, UserRead
 
 router = APIRouter()
+
+
+@router.get("/me", response_model=UserRead)
+async def get_me(
+    user: Annotated[User, Depends(get_current_user)],
+) -> UserRead:
+    return UserRead.model_validate(user)
 
 
 @router.post("/register", response_model=UserRead, status_code=status.HTTP_201_CREATED)

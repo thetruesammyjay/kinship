@@ -22,6 +22,7 @@ class Family(Base):
     id: Mapped[str] = mapped_column(String(36), primary_key=True, default=lambda: str(uuid4()))
     family_name: Mapped[str] = mapped_column(String(200), nullable=False)
     origin_community: Mapped[str | None] = mapped_column(String(200), nullable=True)
+    clan_id: Mapped[str | None] = mapped_column(ForeignKey("clans.id"), nullable=True, index=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
 
 

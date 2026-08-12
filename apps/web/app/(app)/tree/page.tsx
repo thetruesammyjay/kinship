@@ -3,33 +3,68 @@
 import { GitBranch, Layers3 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { FamilyTreeCanvas } from "@/components/family-tree/FamilyTreeCanvas";
+import { FamilySelect } from "@/components/ui/FamilySelect";
 import { apiRequest } from "@/lib/api";
-import { SEED_FAMILY_ID } from "@/lib/constants";
+import { filterTreeByFamily, loadRegistryData, type RegistryData } from "@/lib/registry";
 import type { FamilyTreeRead } from "@/lib/types";
 
 export default function FamilyTreePage() {
+  const [registry, setRegistry] = useState<RegistryData | null>(null);
+  const [familyId, setFamilyId] = useState("");
   const [tree, setTree] = useState<FamilyTreeRead | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     let cancelled = false;
-    apiRequest<FamilyTreeRead>(`/families/${SEED_FAMILY_ID}/tree`)
+    loadRegistryData()
       .then((data) => {
-        if (!cancelled) setTree(data);
+        if (cancelled) return;
+        setRegistry(data);
+        setFamilyId(data.families[0]?.id ?? "");
       })
       .catch(() => {
-        if (!cancelled) setError("Could not load the family tree. Is the API running?");
+        if (!cancelled) setError("Could not load families. Is the API running?");
       });
     return () => {
       cancelled = true;
     };
   }, []);
 
+  useEffect(() => {
+    if (!familyId || !registry) {
+      setTree(null);
+      return;
+    }
+
+    let cancelled = false;
+    setTree(null);
+    setError(null);
+    apiRequest<FamilyTreeRead>(`/families/${familyId}/tree`)
+      .then((data) => {
+        if (!cancelled) setTree(filterTreeByFamily(data, registry.people, familyId));
+      })
+      .catch(() => {
+        if (!cancelled) setError("Could not load the selected family tree.");
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [familyId, registry]);
+
   return (
     <div className="content-stack">
       <section className="section-title">
         <span className="eyebrow">lineage map</span>
         <h1>Family tree</h1>
+      </section>
+      <section className="panel family-filter-panel">
+        <FamilySelect
+          families={registry?.families ?? []}
+          value={familyId}
+          onChange={setFamilyId}
+          disabled={!registry}
+          label="View family"
+        />
       </section>
       {error && <p className="form-error">{error}</p>}
       <FamilyTreeCanvas tree={tree} />
