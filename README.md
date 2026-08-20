@@ -165,7 +165,7 @@ This is the core scholarly contribution. Given Person A and Person B:
 | Background jobs | Celery or RQ | Bulk lineage import, notification dispatch |
 | Auth | JWT (OAuth2 password flow via FastAPI security) | Roles: Admin, Community Elder, Registrar, User |
 | File/object storage | S3-compatible bucket | Family tree exports (PDF/PNG), supporting documents |
-| Hosting | Hugging Face Spaces for API; Node host (Vercel/Docker) for web | FastAPI runs in the API Space; web is a Next.js server pointing at the Space URL |
+| Hosting | Render for API; Vercel for web | FastAPI runs as a Render web service; the Next.js app points at its public URL |
 
 ## Monorepo Structure
 
@@ -219,7 +219,7 @@ kinship-verification-platform/
 │   │
 │   └── api/                          # FastAPI backend
 │       ├── Dockerfile
-│       ├── README.md                  # Hugging Face Space deployment notes
+│       ├── README.md                  # Render deployment notes
 │       ├── pyproject.toml            # or requirements.txt
 │       ├── alembic.ini
 │       ├── alembic/
@@ -384,25 +384,25 @@ pnpm dev:web
 
 ## Deployment
 
-The API is intended to run on **Hugging Face Spaces**, with PostgreSQL as the persistent database and the **free Upstash Redis** tier for caching/rate limiting/background-job coordination. The frontend is a Next.js server and can be deployed to any Node host (Vercel, or the provided Dockerfile) configured to call the Hugging Face Space API URL.
+The API runs on a **Render web service**, with Neon PostgreSQL as the persistent database and the **free Upstash Redis** tier for caching/rate limiting/background-job coordination. The frontend runs on Vercel and calls the public Render API URL.
 
 | Component | Host | Notes |
 |---|---|---|
-| `web` | Node host (Vercel / Docker) | Next.js server; set `NEXT_PUBLIC_API_BASE_URL` to the Hugging Face Space API URL |
-| `api` | Hugging Face Spaces | Docker Space running FastAPI/Uvicorn; exposes `/docs` and `/api/v1/*` |
+| `web` | Vercel | Next.js server; set `NEXT_PUBLIC_API_BASE_URL` to the Render service URL |
+| `api` | Render | Docker web service running FastAPI/Uvicorn; exposes `/health`, `/docs`, and `/api/v1/*` |
 | `postgres` | Managed PostgreSQL provider | Stores auth, audit, evaluation, and graph-modeled lineage tables |
 | `redis` | Upstash Redis Free tier | Provides `REDIS_URL` for cache, rate limiting, and lightweight queue/broker use |
-| `worker` | Optional Hugging Face Space or external worker | Uses the same API image with a worker start command if background jobs are needed |
+| `worker` | Optional external worker | Uses the same application code with a worker start command if background jobs are needed |
 | `object storage` | S3-compatible bucket | Stores documents, family tree exports, and photos |
 
 Steps:
 
-1. Create a Hugging Face Docker Space for `apps/api`, using the API Dockerfile or a Space-level Dockerfile that starts `uvicorn app.main:app --host 0.0.0.0 --port 7860`.
-2. Provision a managed PostgreSQL database and run Alembic migrations to create the application tables and graph edge tables.
-3. Create a free Upstash Redis database and copy its Redis connection string into the Space secrets.
-4. Add the environment variables below as Hugging Face Space secrets, including `DATABASE_URL`, `REDIS_URL`, `JWT_SECRET`, and `CORS_ORIGINS`.
-5. Deploy the frontend separately and set `NEXT_PUBLIC_API_BASE_URL` to `https://<space-owner>-<space-name>.hf.space/api/v1`. Note `NEXT_PUBLIC_*` vars are inlined at build time, so rebuild the web app after changing it (the Dockerfile also accepts it as a build arg).
-6. Configure `CORS_ORIGINS` on the API Space to allow the deployed frontend origin.
+1. In Render, create a Blueprint from this repository using the root `render.yaml`, or create a Docker web service with Root Directory set to `apps/api`.
+2. Add `DATABASE_URL`, `REDIS_URL`, `JWT_SECRET`, and `CORS_ORIGINS` in the Render service environment settings.
+3. Run Alembic migrations against Neon before deploying code that depends on a new revision.
+4. Verify `https://<service>.onrender.com/health` and `https://<service>.onrender.com/docs` after the deploy reaches Live.
+5. Deploy `apps/web` to Vercel and set `NEXT_PUBLIC_API_BASE_URL` to `https://<service>.onrender.com/api/v1`.
+6. Configure `CORS_ORIGINS` on Render to allow the final Vercel production origin.
 
 ## Environment Variables
 
@@ -419,7 +419,7 @@ CORS_ORIGINS=https://your-frontend-domain.example
 
 **`apps/web/.env`**
 ```
-NEXT_PUBLIC_API_BASE_URL=https://your-huggingface-space.hf.space/api/v1
+NEXT_PUBLIC_API_BASE_URL=https://kinship-api.onrender.com/api/v1
 ```
 
 ## Roadmap
