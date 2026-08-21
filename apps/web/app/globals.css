@@ -565,65 +565,185 @@ button {
   color: var(--color-pink);
 }
 
-.tree-canvas {
-  display: grid;
-  gap: 10px;
-  padding: 26px 18px;
+.graph-shell,
+.tree-empty {
+  width: 100%;
+  height: clamp(430px, 66vh, 680px);
+  min-height: 430px;
+  overflow: hidden;
+  border: 1px solid var(--color-line);
   border-radius: var(--radius-card);
   background: #fff;
   box-shadow: var(--shadow-card);
 }
-.tree-row {
-  display: flex;
-  justify-content: center;
-  gap: 14px;
-  flex-wrap: wrap;
-}
-.person-node {
+.tree-empty {
   display: grid;
-  gap: 2px;
-  min-width: 138px;
-  padding: 12px 14px;
-  border-radius: 14px;
-  background: var(--color-paper2);
-  border: 1.5px solid var(--color-line);
-}
-.person-node span {
+  place-content: center;
+  gap: 7px;
+  padding: 24px;
   color: var(--color-muted);
-  font-size: 11px;
-  font-weight: 800;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
+  text-align: center;
 }
-.person-node strong {
-  font-size: 14px;
-  font-weight: 900;
+.tree-empty strong {
+  color: var(--color-ink);
+  font-size: 16px;
 }
-.person-node.pink {
-  background: var(--color-pink);
+.tree-empty span {
+  font-size: 13px;
+}
+.graph-shell .react-flow__node-person {
+  width: 184px;
+  height: 72px;
+}
+.graph-person {
+  display: grid;
+  grid-template-columns: 34px minmax(0, 1fr);
+  align-items: center;
+  gap: 10px;
+  width: 184px;
+  height: 72px;
+  padding: 11px 13px;
+  border: 1.5px solid var(--color-line);
+  border-radius: 8px;
+  background: #fff;
+  box-shadow: 0 5px 16px rgba(37, 18, 22, 0.1);
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+.graph-person:hover,
+.graph-person.selected {
   border-color: var(--color-pink);
-  color: #fff;
+  box-shadow: 0 7px 20px rgba(216, 30, 74, 0.18);
 }
-.person-node.pink span {
-  color: #ffd7de;
-}
-.person-node.black {
-  background: var(--color-night);
-  border-color: var(--color-night);
-  color: #fff;
-}
-.person-node.black span {
-  color: var(--color-ink-soft);
-}
-.relationship-edge {
-  justify-self: center;
-  padding: 4px 12px;
-  border-radius: 999px;
+.graph-person-icon {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
   background: var(--color-blush-soft);
   color: var(--color-pink);
-  font-size: 11px;
+}
+.graph-person-copy {
+  min-width: 0;
+  display: grid;
+  gap: 3px;
+}
+.graph-person-copy strong {
+  overflow: hidden;
+  color: var(--color-ink);
+  font-size: 13px;
   font-weight: 900;
-  letter-spacing: 0.04em;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.graph-person-copy small {
+  color: var(--color-muted);
+  font-size: 10px;
+  font-weight: 700;
+}
+.graph-person .react-flow__handle {
+  width: 8px;
+  height: 8px;
+  border: 2px solid #fff;
+  background: var(--color-pink);
+}
+.graph-shell .react-flow__controls {
+  overflow: hidden;
+  border: 1px solid var(--color-line);
+  border-radius: 8px;
+  box-shadow: var(--shadow-soft);
+}
+.graph-shell .react-flow__controls-button {
+  width: 32px;
+  height: 32px;
+  border-bottom-color: var(--color-line);
+  color: var(--color-ink);
+}
+.graph-minimap {
+  overflow: hidden;
+  border: 1px solid var(--color-line);
+  border-radius: 8px;
+  background: var(--color-paper2);
+}
+.graph-legend,
+.graph-detail {
+  margin: 0 !important;
+  border: 1px solid var(--color-line);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.96);
+  box-shadow: var(--shadow-soft);
+}
+.graph-legend {
+  display: flex;
+  gap: 12px;
+  padding: 8px 10px;
+}
+.graph-legend span {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--color-muted);
+  font-size: 10px;
+  font-weight: 800;
+}
+.graph-legend i {
+  display: block;
+  width: 20px;
+  border-top: 2px solid var(--color-pink-deep);
+}
+.graph-legend i.spouse-line {
+  border-color: var(--color-amber);
+  border-top-style: dashed;
+}
+.graph-detail {
+  position: relative;
+  width: min(220px, calc(100vw - 48px));
+  padding: 12px 38px 12px 13px;
+  display: grid;
+  gap: 3px;
+}
+.graph-detail button {
+  position: absolute;
+  top: 7px;
+  right: 7px;
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border: 0;
+  border-radius: 7px;
+  background: var(--color-paper2);
+  color: var(--color-muted);
+}
+.graph-detail span,
+.graph-detail small {
+  color: var(--color-muted);
+  font-size: 10px;
+  font-weight: 700;
+}
+.graph-detail span {
+  text-transform: uppercase;
+}
+.graph-detail strong {
+  overflow-wrap: anywhere;
+  font-size: 13px;
+}
+
+@media (max-width: 640px) {
+  .graph-shell,
+  .tree-empty {
+    height: min(62vh, 540px);
+    min-height: 400px;
+    border-radius: 12px;
+  }
+  .graph-minimap {
+    display: none;
+  }
+  .graph-detail {
+    top: auto !important;
+    bottom: 52px !important;
+    max-width: calc(100% - 20px);
+  }
 }
 
 .callout-card {
