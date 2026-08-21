@@ -2,15 +2,18 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { NAV_ITEMS, isNavActive } from "@/components/shell/navItems";
+import { isNavActive, navItemsForRole } from "@/components/shell/navItems";
+import { useSession } from "@/lib/session";
 
 export default function BottomNav() {
   const path = usePathname();
+  const { session } = useSession();
+  const navItems = navItemsForRole(session.role);
 
   return (
     <nav className="bottomnav">
       <div className="bottomnav-inner">
-        {NAV_ITEMS.map(({ href, label, Icon, also }) => {
+        {navItems.map(({ href, label, Icon, also }) => {
           const on = isNavActive(path, href, also);
           return (
             <Link
@@ -20,7 +23,8 @@ export default function BottomNav() {
               aria-current={on ? "page" : undefined}
               style={{
                 width: "auto",
-                minWidth: 58,
+                minWidth: 0,
+                flex: 1,
                 height: "auto",
                 padding: "6px 8px",
                 flexDirection: "column",
@@ -28,7 +32,7 @@ export default function BottomNav() {
               }}
             >
               <Icon size={20} />
-              <span style={{ fontSize: 10, fontWeight: 700, lineHeight: 1 }}>{label}</span>
+              <span style={{ fontSize: 9, fontWeight: 700, lineHeight: 1 }}>{label}</span>
             </Link>
           );
         })}

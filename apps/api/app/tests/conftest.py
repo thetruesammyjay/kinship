@@ -4,6 +4,7 @@ from fastapi.testclient import TestClient
 from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
 from sqlalchemy.pool import StaticPool
 
+from app.config import get_settings
 from app.db.postgres import Base, get_db_session
 from app.main import app
 
@@ -41,10 +42,14 @@ def auth_headers(client: TestClient) -> dict[str, str]:
         "email": "registrar@example.com",
         "password": "correct-horse-battery",
     }
+    settings = get_settings()
+    previous_bootstrap_email = settings.bootstrap_admin_email
+    settings.bootstrap_admin_email = credentials["email"]
     response = client.post(
         "/api/v1/auth/register",
         json={"full_name": "Community Registrar", **credentials},
     )
+    settings.bootstrap_admin_email = previous_bootstrap_email
     assert response.status_code == 201
     login = client.post("/api/v1/auth/login", json=credentials)
     assert login.status_code == 200

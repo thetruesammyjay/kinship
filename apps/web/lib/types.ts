@@ -29,6 +29,12 @@ export type FamilyRead = {
   clan_id: string | null;
 };
 
+export type ClanRead = {
+  id: string;
+  clan_name: string;
+  region: string | null;
+};
+
 export type RelationshipRead = {
   source_person_id: string;
   target_person_id: string;
@@ -80,6 +86,38 @@ export type UserRead = {
   email: string;
   phone_number: string | null;
   role: string;
+  is_active: boolean;
+};
+
+export type UserRole = "Admin" | "Registrar" | "Elder" | "User";
+
+export type AdminUser = UserRead & {
+  created_at: string;
+};
+
+export type DisputeStatus = "open" | "under_review" | "resolved" | "rejected";
+
+export type DisputeRead = {
+  id: string;
+  submitted_by: string;
+  entity_type: "person" | "family" | "relationship";
+  entity_id: string;
+  reason: string;
+  status: DisputeStatus;
+  resolution_notes: string | null;
+  resolved_by: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
+export type AuditLogRead = {
+  id: string;
+  actor_user_id: string | null;
+  action: string;
+  entity_type: string;
+  entity_id: string | null;
+  details: string | null;
+  created_at: string;
 };
 
 export type AccuracySummary = {
@@ -97,5 +135,10 @@ export type PerformanceSummary = {
 export type SusSummary = {
   responses: number;
   average_score: number;
+  interpretation: string;
+};
+
+export type SusSubmissionRead = {
+  score: number;
   interpretation: string;
 };

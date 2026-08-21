@@ -9,6 +9,12 @@ class FamilyCreate(BaseModel):
     clan_id: UUID | None = None
 
 
+class FamilyUpdate(BaseModel):
+    family_name: str | None = Field(default=None, min_length=1, max_length=200)
+    origin_community: str | None = Field(default=None, max_length=200)
+    clan_id: UUID | None = None
+
+
 class FamilyRead(FamilyCreate):
     id: UUID
 

@@ -3,15 +3,17 @@
 import { createContext, useCallback, useContext, useEffect, useState } from "react";
 import { apiRequest, SESSION_KEY } from "@/lib/api";
 import type { TokenResponse, UserRead } from "@/lib/types";
+import type { UserRole } from "@/lib/types";
 
 export type Session = {
   status: "guest" | "signed";
   token: string | null;
   email: string;
   fullName: string;
+  role: UserRole | null;
 };
 
-const GUEST: Session = { status: "guest", token: null, email: "", fullName: "" };
+const GUEST: Session = { status: "guest", token: null, email: "", fullName: "", role: null };
 
 type SessionContextValue = {
   session: Session;
@@ -51,6 +53,7 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
                 token: stored.token,
                 email: user.email,
                 fullName: user.full_name,
+                role: user.role as UserRole,
               });
             }
           }
@@ -92,6 +95,7 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
           token: access_token,
           email: user.email,
           fullName: user.full_name,
+          role: user.role as UserRole,
         });
       } finally {
         setBusy(false);
@@ -122,6 +126,7 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
           token: access_token,
           email: user.email,
           fullName: user.full_name,
+          role: user.role as UserRole,
         });
       } finally {
         setBusy(false);

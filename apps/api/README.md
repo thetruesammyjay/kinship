@@ -58,6 +58,7 @@ Add these values under the Render service's **Environment** page.
 | `DATABASE_URL` | Neon pooled connection string. Standard `postgresql://` URLs with `sslmode=require` are supported. |
 | `REDIS_URL` | Upstash TLS connection string beginning with `rediss://`. |
 | `JWT_SECRET` | Long randomly generated production secret. |
+| `BOOTSTRAP_ADMIN_EMAIL` | Email that receives the `Admin` role when it registers. |
 
 ### Configuration
 
@@ -69,6 +70,10 @@ Add these values under the Render service's **Environment** page.
 | `ACCESS_TOKEN_EXPIRE_MINUTES` | `60` |
 | `RELATEDNESS_THRESHOLD_DEGREE` | `2` |
 | `CORS_ORIGINS` | `https://<your-vercel-project>.vercel.app` |
+
+Set `BOOTSTRAP_ADMIN_EMAIL` before creating the first production account, then register with that
+exact email address. Choose an address you control and create it before sharing the public site;
+all later accounts start with the `User` role and can be promoted from the admin interface.
 
 `CORS_ORIGINS` accepts comma-separated exact origins:
 

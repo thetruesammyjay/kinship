@@ -358,8 +358,8 @@ Prerequisites: Node 20+, pnpm, Python 3.11+, uv, Docker.
 
 ```bash
 # 1. Clone and install
-git clone <repo-url> kinship-verification-platform
-cd kinship-verification-platform
+git https://github.com/thetruesammyjay/kinship
+cd kinship
 pnpm install
 
 # 2. Start local infra (Postgres and Redis-compatible cache)
@@ -398,7 +398,7 @@ The API runs on a **Render web service**, with Neon PostgreSQL as the persistent
 Steps:
 
 1. In Render, create a Blueprint from this repository using the root `render.yaml`, or create a Docker web service with Root Directory set to `apps/api`.
-2. Add `DATABASE_URL`, `REDIS_URL`, `JWT_SECRET`, and `CORS_ORIGINS` in the Render service environment settings.
+2. Add `DATABASE_URL`, `REDIS_URL`, `JWT_SECRET`, `BOOTSTRAP_ADMIN_EMAIL`, and `CORS_ORIGINS` in the Render service environment settings.
 3. Run Alembic migrations against Neon before deploying code that depends on a new revision.
 4. Verify `https://<service>.onrender.com/health` and `https://<service>.onrender.com/docs` after the deploy reaches Live.
 5. Deploy `apps/web` to Vercel and set `NEXT_PUBLIC_API_BASE_URL` to `https://<service>.onrender.com/api/v1`.
@@ -411,6 +411,7 @@ Steps:
 DATABASE_URL=postgresql+asyncpg://user:pass@host:5432/kinship
 REDIS_URL=rediss://default:password@host.upstash.io:6379
 JWT_SECRET=changeme
+BOOTSTRAP_ADMIN_EMAIL=admin@example.com
 JWT_ALGORITHM=HS256
 ACCESS_TOKEN_EXPIRE_MINUTES=60
 RELATEDNESS_THRESHOLD_DEGREE=2

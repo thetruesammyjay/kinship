@@ -8,6 +8,18 @@ from app.models.evaluation_log import EvaluationMetric
 
 @dataclass
 class EvaluationService:
+    @staticmethod
+    def calculate_sus_score(responses: list[int]) -> float:
+        contribution = sum(
+            response - 1 if index % 2 == 0 else 5 - response
+            for index, response in enumerate(responses)
+        )
+        return contribution * 2.5
+
+    @staticmethod
+    def interpret_sus_score(score: float) -> str:
+        return "excellent" if score >= 80 else "acceptable" if score >= 68 else "low"
+
     async def accuracy_summary(self, session: AsyncSession) -> dict[str, float | int]:
         rows = (
             await session.execute(
@@ -44,7 +56,7 @@ class EvaluationService:
         )
         responses, average_score = result.one()
         score = float(average_score or 0.0)
-        interpretation = "excellent" if score >= 80 else "acceptable" if score >= 68 else "low"
+        interpretation = self.interpret_sus_score(score)
         if responses == 0:
             interpretation = "not_enough_data"
         return {"responses": responses, "average_score": score, "interpretation": interpretation}

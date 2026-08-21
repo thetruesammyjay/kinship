@@ -4,6 +4,7 @@ from fastapi import APIRouter, Depends, status
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.config import get_settings
 from app.core.exceptions import ApiError
 from app.core.security import create_access_token, hash_password, verify_password
 from app.db.postgres import get_db_session
@@ -30,11 +31,17 @@ async def register(
     if existing_user:
         raise ApiError(status_code=409, message="A user with this email already exists")
 
+    bootstrap_email = get_settings().bootstrap_admin_email
+    role = (
+        "Admin"
+        if bootstrap_email and payload.email.lower() == bootstrap_email.lower()
+        else "User"
+    )
     user = User(
         full_name=payload.full_name,
         email=payload.email.lower(),
         phone_number=payload.phone_number,
-        role="User",
+        role=role,
         password_hash=hash_password(payload.password),
     )
     session.add(user)
@@ -51,4 +58,6 @@ async def login(
     user = await session.scalar(select(User).where(User.email == payload.email.lower()))
     if not user or not verify_password(payload.password, user.password_hash):
         raise ApiError(status_code=401, message="Invalid email or password")
+    if not user.is_active:
+        raise ApiError(status_code=403, message="This account has been deactivated")
     return TokenResponse(access_token=create_access_token(user.id))

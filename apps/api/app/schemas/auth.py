@@ -24,5 +24,6 @@ class UserRead(BaseModel):
     email: str
     phone_number: str | None = None
     role: str
+    is_active: bool
 
     model_config = ConfigDict(from_attributes=True)

@@ -4,6 +4,7 @@ from app.api.v1.endpoints import (
     admin,
     auth,
     clans,
+    disputes,
     evaluation,
     families,
     family_tree,
@@ -15,6 +16,7 @@ api_router = APIRouter()
 api_router.include_router(auth.router, prefix="/auth", tags=["auth"])
 api_router.include_router(persons.router, prefix="/persons", tags=["persons"])
 api_router.include_router(clans.router, prefix="/clans", tags=["clans"])
+api_router.include_router(disputes.router, prefix="/disputes", tags=["disputes"])
 api_router.include_router(families.router, prefix="/families", tags=["families"])
 api_router.include_router(family_tree.router, prefix="/families", tags=["family-tree"])
 api_router.include_router(kinship.router, prefix="/kinship", tags=["kinship"])

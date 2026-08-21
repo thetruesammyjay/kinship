@@ -3,12 +3,13 @@
 import { GitBranch, LogOut } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { NAV_ITEMS, isNavActive } from "@/components/shell/navItems";
+import { isNavActive, navItemsForRole } from "@/components/shell/navItems";
 import { useSession } from "@/lib/session";
 
 export default function LeftRail() {
   const path = usePathname();
-  const { signOut } = useSession();
+  const { session, signOut } = useSession();
+  const navItems = navItemsForRole(session.role);
 
   return (
     <div className="lrail">
@@ -25,7 +26,7 @@ export default function LeftRail() {
           alignItems: "center",
         }}
       >
-        {NAV_ITEMS.map(({ href, label, Icon, also }) => {
+        {navItems.map(({ href, label, Icon, also }) => {
           const on = isNavActive(path, href, also);
           return (
             <Link

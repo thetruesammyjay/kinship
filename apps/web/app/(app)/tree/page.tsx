@@ -1,7 +1,7 @@
 "use client";
 
-import { GitBranch, Layers3 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { Flag, GitBranch, Layers3, Send } from "lucide-react";
+import { FormEvent, useEffect, useState } from "react";
 import { FamilyTreeCanvas } from "@/components/family-tree/FamilyTreeCanvas";
 import { FamilySelect } from "@/components/ui/FamilySelect";
 import { apiRequest } from "@/lib/api";
@@ -13,6 +13,28 @@ export default function FamilyTreePage() {
   const [familyId, setFamilyId] = useState("");
   const [tree, setTree] = useState<FamilyTreeRead | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [disputeReason, setDisputeReason] = useState("");
+  const [disputeMessage, setDisputeMessage] = useState<string | null>(null);
+
+  async function submitDispute(event: FormEvent) {
+    event.preventDefault();
+    setError(null);
+    setDisputeMessage(null);
+    try {
+      await apiRequest("/disputes", {
+        method: "POST",
+        body: JSON.stringify({
+          entity_type: "family",
+          entity_id: familyId,
+          reason: disputeReason,
+        }),
+      });
+      setDisputeReason("");
+      setDisputeMessage("Your concern has been sent for administrator review.");
+    } catch (caught) {
+      setError(caught instanceof Error ? caught.message : "Could not submit the concern.");
+    }
+  }
 
   useEffect(() => {
     let cancelled = false;
@@ -68,6 +90,12 @@ export default function FamilyTreePage() {
       </section>
       {error && <p className="form-error">{error}</p>}
       <FamilyTreeCanvas tree={tree} />
+      <form className="panel dispute-form" onSubmit={submitDispute}>
+        <div className="panel-heading"><Flag size={22} /><h2>Report a record concern</h2><p className="muted-copy">Flag incorrect or disputed information in the selected family record.</p></div>
+        <label className="field">What needs review?<textarea value={disputeReason} onChange={(event) => setDisputeReason(event.target.value)} minLength={10} required /></label>
+        {disputeMessage && <p className="form-ok">{disputeMessage}</p>}
+        <button className="btng" disabled={!familyId}><Send size={17} />Send for review</button>
+      </form>
       <section className="two-column">
         <article className="panel pink-panel">
           <GitBranch size={24} />

@@ -18,6 +18,7 @@ class Settings(BaseSettings):
     jwt_secret: str = "change-me-in-real-environments"
     jwt_algorithm: str = "HS256"
     access_token_expire_minutes: int = 60
+    bootstrap_admin_email: str | None = None
     relatedness_threshold_degree: int = 2
 
     cors_origins: Annotated[list[str], NoDecode] = Field(
