@@ -4,8 +4,15 @@ A graph-based kinship verification platform for ancestry tracing and marriage el
 
 This repository is the proof-of-concept implementation supporting the research artifact: *"Design and Evaluation of a Kinship Verification Framework for Preventing Consanguineous Marriages in African Communities."* The scholarly contribution is the kinship verification framework and relationship-detection algorithm; the web platform below is the vehicle that demonstrates and evaluates it.
 
+## Live Deployment
+
+- **Web application:** [https://kinship-web-silk.vercel.app](https://kinship-web-silk.vercel.app)
+- **API documentation:** [https://kinship-m1n0.onrender.com/docs](https://kinship-m1n0.onrender.com/docs)
+- **API health:** [https://kinship-m1n0.onrender.com/health](https://kinship-m1n0.onrender.com/health)
+
 ## Table of Contents
 
+- [Live Deployment](#live-deployment)
 - [Problem and Motivation](#problem-and-motivation)
 - [Core Concepts](#core-concepts)
 - [Architecture](#architecture)
@@ -400,9 +407,9 @@ Steps:
 1. In Render, create a Blueprint from this repository using the root `render.yaml`, or create a Docker web service with Root Directory set to `apps/api`.
 2. Add `DATABASE_URL`, `REDIS_URL`, `JWT_SECRET`, `BOOTSTRAP_ADMIN_EMAIL`, and `CORS_ORIGINS` in the Render service environment settings.
 3. Run Alembic migrations against Neon before deploying code that depends on a new revision.
-4. Verify `https://<service>.onrender.com/health` and `https://<service>.onrender.com/docs` after the deploy reaches Live.
-5. Deploy `apps/web` to Vercel and set `NEXT_PUBLIC_API_BASE_URL` to `https://<service>.onrender.com/api/v1`.
-6. Configure `CORS_ORIGINS` on Render to allow the final Vercel production origin.
+4. Verify [the health endpoint](https://kinship-m1n0.onrender.com/health) and [API documentation](https://kinship-m1n0.onrender.com/docs) after the deploy reaches Live.
+5. Deploy `apps/web` to Vercel and set `NEXT_PUBLIC_API_BASE_URL` to `https://kinship-m1n0.onrender.com/api/v1`.
+6. Set `CORS_ORIGINS` on Render to `https://kinship-web-silk.vercel.app`.
 
 ## Environment Variables
 
@@ -415,12 +422,13 @@ BOOTSTRAP_ADMIN_EMAIL=admin@example.com
 JWT_ALGORITHM=HS256
 ACCESS_TOKEN_EXPIRE_MINUTES=60
 RELATEDNESS_THRESHOLD_DEGREE=2
-CORS_ORIGINS=https://your-frontend-domain.example
+CORS_ORIGINS=https://kinship-web-silk.vercel.app
 ```
 
 **`apps/web/.env`**
 ```
-NEXT_PUBLIC_API_BASE_URL=https://kinship-api.onrender.com/api/v1
+NEXT_PUBLIC_API_BASE_URL=https://kinship-m1n0.onrender.com/api/v1
+NEXT_PUBLIC_SITE_URL=https://kinship-web-silk.vercel.app
 ```
 
 ## Roadmap
