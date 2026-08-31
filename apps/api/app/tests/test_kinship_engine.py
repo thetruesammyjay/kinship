@@ -46,6 +46,32 @@ def test_verify_kinship_finds_shared_ancestor(
     assert payload["status"] == "Distantly Related"
     assert payload["common_ancestor_id"] == grandparent["id"]
     assert payload["degree"] == 3
+    assert payload["relationship"] == "First cousins"
+
+
+def test_verify_kinship_identifies_direct_parent_child(
+    client: TestClient, auth_headers: dict[str, str]
+) -> None:
+    parent = client.post(
+        "/api/v1/persons", json={"full_name": "Parent"}, headers=auth_headers
+    ).json()
+    child = client.post(
+        "/api/v1/persons", json={"full_name": "Child"}, headers=auth_headers
+    ).json()
+    client.post(
+        f"/api/v1/persons/{child['id']}/parents",
+        json={"target_person_id": parent["id"]},
+        headers=auth_headers,
+    )
+
+    response = client.post(
+        "/api/v1/kinship/verify",
+        json={"person_a_id": parent["id"], "person_b_id": child["id"]},
+    )
+
+    assert response.status_code == 200
+    assert response.json()["relationship"] == "Parent-child"
+    assert response.json()["degree"] == 1
 
 
 def test_verify_kinship_returns_unrelated_without_shared_ancestor(
@@ -65,3 +91,4 @@ def test_verify_kinship_returns_unrelated_without_shared_ancestor(
 
     assert response.status_code == 200
     assert response.json()["status"] == "Unrelated"
+    assert response.json()["relationship"] == "Unrelated"

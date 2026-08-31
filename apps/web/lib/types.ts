@@ -51,6 +51,7 @@ export type RelationshipPathStep = {
 
 export type KinshipVerifyResponse = {
   status: KinshipStatus;
+  relationship: string;
   degree: number | null;
   common_ancestor_id: string | null;
   path: RelationshipPathStep[];

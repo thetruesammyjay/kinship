@@ -21,7 +21,8 @@ export function VerdictBanner({ result }: VerdictBannerProps) {
       {isClose ? <ShieldAlert size={24} /> : <ShieldCheck size={24} />}
       <div>
         <span>{result.status}</span>
-        <strong>{result.degree != null ? `Degree ${result.degree}` : "No degree"}</strong>
+        <strong>{result.relationship}</strong>
+        <small>{result.degree != null ? `Computed degree ${result.degree}` : "No blood degree"}</small>
       </div>
     </section>
   );
