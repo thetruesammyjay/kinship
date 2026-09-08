@@ -1,0 +1,115 @@
+<mxfile host="app.diagrams.net" modified="2026-09-07T00:00:00.000Z" agent="Kinship" version="24.7.17">
+  <diagram id="use-case" name="Use Case Diagram">
+    <mxGraphModel fold="1" pageWidth="1500" dx="1450" tooltips="1" guides="1" connect="1" grid="1" shadow="0" math="0" pageHeight="900" dy="900" gridSize="10" pageScale="1" page="1" arrows="1">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="title" value="Use Case Diagram - Kinship Verification Platform" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=24;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="30" y="10" width="720" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="boundary" value="Kinship Verification Platform" style="swimlane;startSize=36;horizontal=1;rounded=0;whiteSpace=wrap;html=1;strokeWidth=2;fillColor=#f5f5f5;swimlaneFillColor=#ffffff;strokeColor=#64748b;fontSize=14;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="200" y="60" width="1040" height="810" as="geometry" />
+        </mxCell>
+        <mxCell id="community" value="Community User" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;strokeColor=#334155;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="45" y="380" width="90" height="115" as="geometry" />
+        </mxCell>
+        <mxCell id="recorder" value="Lineage Recorder&lt;br&gt;Registrar, Elder, Admin" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;strokeColor=#334155;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="1360" y="130" width="130" height="125" as="geometry" />
+        </mxCell>
+        <mxCell id="manager" value="Family / Clan Manager&lt;br&gt;Registrar and Admin" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;strokeColor=#334155;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="1360" y="355" width="130" height="125" as="geometry" />
+        </mxCell>
+        <mxCell id="administrator" value="Administrator" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;strokeColor=#334155;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="1360" y="650" width="120" height="115" as="geometry" />
+        </mxCell>
+        <mxCell id="register" value="Register account" style="ellipse;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;strokeWidth=1.5;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="280" y="100" width="200" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="signin" value="Sign in" style="ellipse;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;strokeWidth=1.5;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="450" y="140" width="200" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="search" value="Search person records" style="ellipse;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;strokeWidth=1.5;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="610" y="200" width="210" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="tree" value="View interactive family tree" style="ellipse;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;strokeWidth=1.5;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="690" y="280" width="230" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="verify" value="Verify kinship relationship" style="ellipse;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;strokeWidth=1.5;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="690" y="370" width="230" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="marriage" value="Check marriage eligibility" style="ellipse;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;strokeWidth=1.5;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="670" y="460" width="230" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="dispute" value="Submit record dispute&lt;br&gt;(sign-in required)" style="ellipse;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;strokeWidth=1.5;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="570" y="555" width="240" height="65" as="geometry" />
+        </mxCell>
+        <mxCell id="sus" value="Submit SUS evaluation&lt;br&gt;(sign-in required)" style="ellipse;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;strokeWidth=1.5;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="410" y="650" width="240" height="65" as="geometry" />
+        </mxCell>
+        <mxCell id="person" value="Create person record" style="ellipse;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;strokeWidth=1.5;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="950" y="100" width="250" height="62" as="geometry" />
+        </mxCell>
+        <mxCell id="relationship" value="Record parent or spouse link" style="ellipse;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;strokeWidth=1.5;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="950" y="205" width="250" height="62" as="geometry" />
+        </mxCell>
+        <mxCell id="family" value="Create or update families and clans" style="ellipse;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;strokeWidth=1.5;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="950" y="360" width="260" height="62" as="geometry" />
+        </mxCell>
+        <mxCell id="users" value="Manage users and roles" style="ellipse;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;strokeWidth=1.5;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="950" y="530" width="240" height="62" as="geometry" />
+        </mxCell>
+        <mxCell id="review" value="Review and resolve disputes" style="ellipse;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;strokeWidth=1.5;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="950" y="645" width="240" height="62" as="geometry" />
+        </mxCell>
+        <mxCell id="audit" value="Review audit records" style="ellipse;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;strokeWidth=1.5;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="950" y="760" width="240" height="62" as="geometry" />
+        </mxCell>
+        <mxCell id="legend" value="Green = public  |  Yellow = sign-in required  |  Blue = lineage management  |  Orange = administration" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;fontSize=12;fontColor=#475569;" vertex="1" parent="1">
+          <mxGeometry x="390" y="830" width="660" height="25" as="geometry" />
+        </mxCell>
+        <mxCell id="u1" value="" style="endArrow=none;html=1;rounded=0;edgeStyle=none;strokeColor=#475569;strokeWidth=1.3;" edge="1" parent="1" source="community" target="register">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="u2" value="" style="endArrow=none;html=1;rounded=0;edgeStyle=none;strokeColor=#475569;strokeWidth=1.3;" edge="1" parent="1" source="community" target="signin">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="u3" value="" style="endArrow=none;html=1;rounded=0;edgeStyle=none;strokeColor=#475569;strokeWidth=1.3;" edge="1" parent="1" source="community" target="search">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="u4" value="" style="endArrow=none;html=1;rounded=0;edgeStyle=none;strokeColor=#475569;strokeWidth=1.3;" edge="1" parent="1" source="community" target="tree">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="u5" value="" style="endArrow=none;html=1;rounded=0;edgeStyle=none;strokeColor=#475569;strokeWidth=1.3;" edge="1" parent="1" source="community" target="verify">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="u6" value="" style="endArrow=none;html=1;rounded=0;edgeStyle=none;strokeColor=#475569;strokeWidth=1.3;" edge="1" parent="1" source="community" target="marriage">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="u7" value="" style="endArrow=none;html=1;rounded=0;edgeStyle=none;strokeColor=#475569;strokeWidth=1.3;" edge="1" parent="1" source="community" target="dispute">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="u8" value="" style="endArrow=none;html=1;rounded=0;edgeStyle=none;strokeColor=#475569;strokeWidth=1.3;" edge="1" parent="1" source="community" target="sus">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="r1" value="" style="endArrow=none;html=1;rounded=0;edgeStyle=none;strokeColor=#475569;strokeWidth=1.3;" edge="1" parent="1" source="recorder" target="person">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="r2" value="" style="endArrow=none;html=1;rounded=0;edgeStyle=none;strokeColor=#475569;strokeWidth=1.3;" edge="1" parent="1" source="recorder" target="relationship">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="m1" value="" style="endArrow=none;html=1;rounded=0;edgeStyle=none;strokeColor=#475569;strokeWidth=1.3;" edge="1" parent="1" source="manager" target="family">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="a1" value="" style="endArrow=none;html=1;rounded=0;edgeStyle=none;strokeColor=#475569;strokeWidth=1.3;" edge="1" parent="1" source="administrator" target="users">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="a2" value="" style="endArrow=none;html=1;rounded=0;edgeStyle=none;strokeColor=#475569;strokeWidth=1.3;" edge="1" parent="1" source="administrator" target="review">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="a3" value="" style="endArrow=none;html=1;rounded=0;edgeStyle=none;strokeColor=#475569;strokeWidth=1.3;" edge="1" parent="1" source="administrator" target="audit">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

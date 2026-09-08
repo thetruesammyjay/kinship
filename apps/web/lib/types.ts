@@ -143,3 +143,13 @@ export type SusSubmissionRead = {
   score: number;
   interpretation: string;
 };
+
+export type MarriageEligibilityResponse = {
+  can_marry: boolean;
+  decision: "Eligible to marry" | "Not eligible to marry";
+  relationship: string;
+  degree: number | null;
+  common_ancestor_id: string | null;
+  path: RelationshipPathStep[];
+  message: string;
+};

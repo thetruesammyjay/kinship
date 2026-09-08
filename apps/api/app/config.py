@@ -20,6 +20,7 @@ class Settings(BaseSettings):
     access_token_expire_minutes: int = 60
     bootstrap_admin_email: str | None = None
     relatedness_threshold_degree: int = 2
+    marriage_minimum_degree: int = 5
 
     cors_origins: Annotated[list[str], NoDecode] = Field(
         default_factory=lambda: ["http://localhost:3000", "http://localhost:5173"]

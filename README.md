@@ -33,11 +33,11 @@ Many African communities have historically relied on elders and oral tradition t
 
 ## Core Concepts
 
-- **Genealogy** — the digitized record of ancestry and lineage.
-- **Kinship** — consanguinity (blood relation), affinity (relation by marriage), clan relationships, extended family relationships.
-- **Consanguineous marriage** — marriage between individuals related by blood within a socially or biologically significant degree.
-- **Family tree** — a hierarchical/graph representation of lineage.
-- **Graph-based relationship network** — persons as nodes, relationships (parent-child, marriage, sibling) as edges. This is the structural backbone of the whole system.
+- **Genealogy** Ã¢â‚¬â€ the digitized record of ancestry and lineage.
+- **Kinship** Ã¢â‚¬â€ consanguinity (blood relation), affinity (relation by marriage), clan relationships, extended family relationships.
+- **Consanguineous marriage** Ã¢â‚¬â€ marriage between individuals related by blood within a socially or biologically significant degree.
+- **Family tree** Ã¢â‚¬â€ a hierarchical/graph representation of lineage.
+- **Graph-based relationship network** Ã¢â‚¬â€ persons as nodes, relationships (parent-child, marriage, sibling) as edges. This is the structural backbone of the whole system.
 
 Theoretical grounding: **Graph Theory** (individuals as vertices, relationships as edges, shortest-path computation for relatedness), **Social Network Theory** (relationships as networks), and the **Information Systems Success Model** (used for the usability/effectiveness evaluation in Chapter 4).
 
@@ -57,7 +57,7 @@ flowchart TB
         LB["Web/API Public Endpoints<br/>(HTTPS, custom domain)"]
     end
 
-    subgraph API["Application Layer — FastAPI Service"]
+    subgraph API["Application Layer Ã¢â‚¬â€ FastAPI Service"]
         GATEWAY["API Gateway / Routing<br/>(FastAPI + Pydantic v2)"]
         AUTH["Auth Service<br/>(JWT, OAuth2 password flow)"]
         PERSON["Person & Family Registry Service"]
@@ -135,7 +135,9 @@ sequenceDiagram
         KIN->>CACHE: store result (TTL)
     end
     KIN->>KIN: classify degree vs threshold
-    KIN-->>API: {status: Unrelated | Distantly Related | Closely Related, degree, path}
+    KIN-->>API: {status, relationship, degree, path}
+    FE->>API: POST /api/v1/kinship/marriage-eligibility {personA, personB}
+    API-->>FE: {can_marry, decision, relationship, reason}
     API-->>FE: 200 OK JSON result
     FE-->>User: Render verdict + relationship path + warning banner if closely related
 ```
@@ -144,17 +146,18 @@ sequenceDiagram
 
 This is the core scholarly contribution. Given Person A and Person B:
 
-1. **Find common ancestor(s)** — traverse `CHILD_OF` / `PARENT_OF` edges upward from both A and B in the graph until a shared ancestor node is found (or none exists within a bounded depth).
-2. **Calculate relationship path** — compute the shortest path between A and B through the ancestor graph using PostgreSQL recursive CTEs and/or an application-level BFS over indexed relationship edges.
-3. **Determine degree of relatedness** — derive a numeric degree from path length and generation offset.
-4. **Compare against threshold** — classify the pair against a configurable eligibility threshold.
+1. **Find common ancestor(s)** Ã¢â‚¬â€ traverse `CHILD_OF` / `PARENT_OF` edges upward from both A and B in the graph until a shared ancestor node is found (or none exists within a bounded depth).
+2. **Calculate relationship path** Ã¢â‚¬â€ compute the shortest path between A and B through the ancestor graph using PostgreSQL recursive CTEs and/or an application-level BFS over indexed relationship edges.
+3. **Determine degree of relatedness** Ã¢â‚¬â€ derive a numeric degree from path length and generation offset.
+4. **Classify the relationship** - distinguish direct ancestry, siblings, aunt/uncle relationships, cousins, spouses, and unrelated records.
+5. **Assess marriage eligibility** - block direct ancestors and relationships closer than second cousins; allow degree 5 or higher and pairs with no shared ancestor.
 
 | Relationship | Degree |
 |---|---|
-| Sibling | 1 |
-| First Cousin | 2 |
-| Second Cousin | 3 |
-| Third Cousin | 4 |
+| Siblings | 1 |
+| First Cousins | 3 |
+| Second Cousins | 5 |
+| Third Cousins | 7 |
 
 **Output:** `Unrelated`, `Distantly Related`, or `Closely Related`, plus the full relationship path and computed degree so the result is explainable, not a black box.
 
@@ -164,7 +167,7 @@ This is the core scholarly contribution. Given Person A and Person B:
 |---|---|---|
 | Frontend | Next.js 15 (App Router) + React 19 + TypeScript | Server-rendered/prerendered pages, deployable as a Node service |
 | Styling | Tailwind CSS v4 | `@theme` design tokens in `app/globals.css` |
-| Tree/Graph visualization | React Flow or D3.js | For interactive family tree rendering (current build renders edge rows) |
+| Tree/Graph visualization | React Flow + Dagre | Interactive family graph with parent, spouse, and cross-branch edges |
 | Backend | FastAPI (Python) | Async, OpenAPI docs auto-generated, Pydantic v2 validation |
 | Graph-modeled persistence | PostgreSQL | Stores persons/clans/families as entities and kinship links as indexed edge tables; the algorithm still treats the data as a graph |
 | Relational database | PostgreSQL | Users, auth, audit trail, lineage graph tables, evaluation metrics (accuracy/response-time/SUS logs) |
@@ -178,132 +181,132 @@ This is the core scholarly contribution. Given Person A and Person B:
 
 ```
 kinship-verification-platform/
-├── README.md
-├── .gitignore
-├── .editorconfig
-├── docker-compose.yml                # local dev: postgres, redis-compatible cache
-├── turbo.json                        # optional: Turborepo pipeline if using pnpm workspaces
-├── package.json                      # root workspace manifest (pnpm workspaces)
-├── pnpm-workspace.yaml
-│
-├── apps/
-│   ├── web/                          # Next.js 15 App Router frontend
-│   │   ├── Dockerfile
-│   │   ├── package.json
-│   │   ├── next.config.ts
-│   │   ├── postcss.config.mjs        # @tailwindcss/postcss
-│   │   ├── tsconfig.json
-│   │   ├── public/
-│   │   │   └── favicon.svg
-│   │   ├── app/                      # file-based routes
-│   │   │   ├── layout.tsx            # root layout, wraps <SessionProvider>
-│   │   │   ├── globals.css           # Tailwind v4 import + @theme tokens
-│   │   │   ├── page.tsx              # marketing landing
-│   │   │   ├── signin/page.tsx       # login + register (JWT auth)
-│   │   │   └── (app)/                # authenticated route group
-│   │   │       ├── layout.tsx        # <AppGate><AppShell>…
-│   │   │       ├── dashboard/page.tsx
-│   │   │       ├── register/page.tsx
-│   │   │       ├── tree/page.tsx
-│   │   │       ├── verify/page.tsx
-│   │   │       └── evaluation/page.tsx        # SUS scores, accuracy/perf dashboards
-│   │   ├── components/
-│   │   │   ├── shell/                # AppShell, AppGate, LeftRail, BottomNav, navItems
-│   │   │   ├── family-tree/
-│   │   │   │   ├── FamilyTreeCanvas.tsx     # React Flow / D3 render
-│   │   │   │   ├── PersonNode.tsx
-│   │   │   │   └── RelationshipEdge.tsx
-│   │   │   ├── kinship/
-│   │   │   │   ├── VerificationForm.tsx
-│   │   │   │   ├── VerdictBanner.tsx
-│   │   │   │   └── RelationshipPath.tsx
-│   │   │   └── ui/                          # PersonPicker (search-as-you-type)
-│   │   └── lib/
-│   │       ├── api.ts                # fetch wrapper, base URL from env, Bearer token
-│   │       ├── session.tsx           # JWT session context, persisted to localStorage
-│   │       ├── types.ts              # types mirroring the FastAPI schemas
-│   │       └── constants.ts
-│   │
-│   └── api/                          # FastAPI backend
-│       ├── Dockerfile
-│       ├── README.md                  # Render deployment notes
-│       ├── pyproject.toml            # or requirements.txt
-│       ├── alembic.ini
-│       ├── alembic/
-│       │   └── versions/
-│       ├── app/
-│       │   ├── main.py               # FastAPI app factory, router registration
-│       │   ├── config.py             # Pydantic Settings, reads env vars
-│       │   ├── dependencies.py       # DB sessions, current_user, pagination
-│       │   ├── api/
-│       │   │   └── v1/
-│       │   │       ├── router.py
-│       │   │       ├── endpoints/
-│       │   │       │   ├── auth.py
-│       │   │       │   ├── persons.py
-│       │   │       │   ├── families.py
-│       │   │       │   ├── family_tree.py
-│       │   │       │   ├── kinship.py
-│       │   │       │   ├── evaluation.py
-│       │   │       │   └── admin.py
-│       │   ├── core/
-│       │   │   ├── security.py       # JWT encode/decode, password hashing
-│       │   │   └── exceptions.py
-│       │   ├── db/
-│       │   │   ├── postgres.py       # SQLAlchemy engine/session
-│       │   │   └── redis_client.py
-│       │   ├── models/               # SQLAlchemy models (users, lineage graph, audit, metrics)
-│       │   │   ├── user.py
-│       │   │   ├── person.py
-│       │   │   ├── kinship_edge.py
-│       │   │   └── evaluation_log.py
-│       │   ├── graph/                # Postgres-backed graph traversal domain layer
-│       │   │   ├── person_repository.py
-│       │   │   ├── family_repository.py
-│       │   │   └── traversal_queries.py
-│       │   ├── schemas/              # Pydantic request/response models
-│       │   │   ├── person.py
-│       │   │   ├── family.py
-│       │   │   ├── kinship.py
-│       │   │   └── auth.py
-│       │   ├── services/
-│       │   │   ├── person_service.py
-│       │   │   ├── family_tree_service.py
-│       │   │   ├── kinship_engine.py         # the algorithm from section above
-│       │   │   ├── evaluation_service.py     # accuracy / response-time / SUS aggregation
-│       │   │   └── notification_service.py
-│       │   ├── workers/
-│       │   │   ├── celery_app.py
-│       │   │   ├── bulk_import_worker.py
-│       │   │   └── notification_worker.py
-│       │   └── tests/
-│       │       ├── conftest.py
-│       │       ├── test_kinship_engine.py
-│       │       ├── test_person_endpoints.py
-│       │       └── test_evaluation.py
-│       └── scripts/
-│           ├── seed_data.py                  # sample African family datasets for evaluation
-│           └── load_test.py                  # scalability tests: 100 / 1,000 / 10,000 persons
-│
-├── packages/
-│   ├── shared-types/                 # TS types shared between frontend and OpenAPI-generated client
-│   │   ├── package.json
-│   │   └── src/index.ts
-│   └── ui/                           # optional shared component library
-│       ├── package.json
-│       └── src/
-│
-├── docs/
-│   ├── architecture.md
-│   ├── data-model.md
-│   ├── algorithm.md
-│   ├── evaluation-plan.md            # SUS instrument, accuracy test protocol
-│   └── api-reference.md              # generated/curated from FastAPI OpenAPI schema
-│
-└── .github/
-    └── workflows/
-        ├── ci-api.yml                # lint + pytest on apps/api
-        └── ci-web.yml                # lint + build on apps/web
+Ã¢â€Å“Ã¢â€â‚¬Ã¢â€â‚¬ README.md
+Ã¢â€Å“Ã¢â€â‚¬Ã¢â€â‚¬ .gitignore
+Ã¢â€Å“Ã¢â€â‚¬Ã¢â€â‚¬ .editorconfig
+Ã¢â€Å“Ã¢â€â‚¬Ã¢â€â‚¬ docker-compose.yml                # local dev: postgres, redis-compatible cache
+Ã¢â€Å“Ã¢â€â‚¬Ã¢â€â‚¬ turbo.json                        # optional: Turborepo pipeline if using pnpm workspaces
+Ã¢â€Å“Ã¢â€â‚¬Ã¢â€â‚¬ package.json                      # root workspace manifest (pnpm workspaces)
+Ã¢â€Å“Ã¢â€â‚¬Ã¢â€â‚¬ pnpm-workspace.yaml
+Ã¢â€â€š
+Ã¢â€Å“Ã¢â€â‚¬Ã¢â€â‚¬ apps/
+Ã¢â€â€š   Ã¢â€Å“Ã¢â€â‚¬Ã¢â€â‚¬ web/                          # Next.js 15 App Router frontend
+Ã¢â€â€š   Ã¢â€â€š   Ã¢â€Å“Ã¢â€â‚¬Ã¢â€â‚¬ Dockerfile
+Ã¢â€â€š   Ã¢â€â€š   Ã¢â€Å“Ã¢â€â‚¬Ã¢â€â‚¬ package.json
+Ã¢â€â€š   Ã¢â€â€š   Ã¢â€Å“Ã¢â€â‚¬Ã¢â€â‚¬ next.config.ts
+Ã¢â€â€š   Ã¢â€â€š   Ã¢â€Å“Ã¢â€â‚¬Ã¢â€â‚¬ postcss.config.mjs        # @tailwindcss/postcss
+Ã¢â€â€š   Ã¢â€â€š   Ã¢â€Å“Ã¢â€â‚¬Ã¢â€â‚¬ tsconfig.json
+Ã¢â€â€š   Ã¢â€â€š   Ã¢â€Å“Ã¢â€â‚¬Ã¢â€â‚¬ public/
+Ã¢â€â€š   Ã¢â€â€š   Ã¢â€â€š   Ã¢â€â€Ã¢â€â‚¬Ã¢â€â‚¬ favicon.svg
+Ã¢â€â€š   Ã¢â€â€š   Ã¢â€Å“Ã¢â€â‚¬Ã¢â€â‚¬ app/                      # file-based routes
+Ã¢â€â€š   Ã¢â€â€š   Ã¢â€â€š   Ã¢â€Å“Ã¢â€â‚¬Ã¢â€â‚¬ layout.tsx            # root layout, wraps <SessionProvider>
+Ã¢â€â€š   Ã¢â€â€š   Ã¢â€â€š   Ã¢â€Å“Ã¢â€â‚¬Ã¢â€â‚¬ globals.css           # Tailwind v4 import + @theme tokens
+Ã¢â€â€š   Ã¢â€â€š   Ã¢â€â€š   Ã¢â€Å“Ã¢â€â‚¬Ã¢â€â‚¬ page.tsx              # marketing landing
+Ã¢â€â€š   Ã¢â€â€š   Ã¢â€â€š   Ã¢â€Å“Ã¢â€â‚¬Ã¢â€â‚¬ signin/page.tsx       # login + register (JWT auth)
+Ã¢â€â€š   Ã¢â€â€š   Ã¢â€â€š   Ã¢â€â€Ã¢â€â‚¬Ã¢â€â‚¬ (app)/                # authenticated route group
+Ã¢â€â€š   Ã¢â€â€š   Ã¢â€â€š       Ã¢â€Å“Ã¢â€â‚¬Ã¢â€â‚¬ layout.tsx        # <AppGate><AppShell>Ã¢â‚¬Â¦
+Ã¢â€â€š   Ã¢â€â€š   Ã¢â€â€š       Ã¢â€Å“Ã¢â€â‚¬Ã¢â€â‚¬ dashboard/page.tsx
+Ã¢â€â€š   Ã¢â€â€š   Ã¢â€â€š       Ã¢â€Å“Ã¢â€â‚¬Ã¢â€â‚¬ register/page.tsx
+Ã¢â€â€š   Ã¢â€â€š   Ã¢â€â€š       Ã¢â€Å“Ã¢â€â‚¬Ã¢â€â‚¬ tree/page.tsx
+Ã¢â€â€š   Ã¢â€â€š   Ã¢â€â€š       Ã¢â€Å“Ã¢â€â‚¬Ã¢â€â‚¬ verify/page.tsx
+Ã¢â€â€š   Ã¢â€â€š   Ã¢â€â€š       Ã¢â€â€Ã¢â€â‚¬Ã¢â€â‚¬ evaluation/page.tsx        # SUS scores, accuracy/perf dashboards
+Ã¢â€â€š   Ã¢â€â€š   Ã¢â€Å“Ã¢â€â‚¬Ã¢â€â‚¬ components/
+Ã¢â€â€š   Ã¢â€â€š   Ã¢â€â€š   Ã¢â€Å“Ã¢â€â‚¬Ã¢â€â‚¬ shell/                # AppShell, AppGate, LeftRail, BottomNav, navItems
+Ã¢â€â€š   Ã¢â€â€š   Ã¢â€â€š   Ã¢â€Å“Ã¢â€â‚¬Ã¢â€â‚¬ family-tree/
+Ã¢â€â€š   Ã¢â€â€š   Ã¢â€â€š   Ã¢â€â€š   Ã¢â€Å“Ã¢â€â‚¬Ã¢â€â‚¬ FamilyTreeCanvas.tsx     # React Flow / D3 render
+Ã¢â€â€š   Ã¢â€â€š   Ã¢â€â€š   Ã¢â€â€š   Ã¢â€Å“Ã¢â€â‚¬Ã¢â€â‚¬ PersonNode.tsx
+Ã¢â€â€š   Ã¢â€â€š   Ã¢â€â€š   Ã¢â€â€š   Ã¢â€â€Ã¢â€â‚¬Ã¢â€â‚¬ RelationshipEdge.tsx
+Ã¢â€â€š   Ã¢â€â€š   Ã¢â€â€š   Ã¢â€Å“Ã¢â€â‚¬Ã¢â€â‚¬ kinship/
+Ã¢â€â€š   Ã¢â€â€š   Ã¢â€â€š   Ã¢â€â€š   Ã¢â€Å“Ã¢â€â‚¬Ã¢â€â‚¬ VerificationForm.tsx
+Ã¢â€â€š   Ã¢â€â€š   Ã¢â€â€š   Ã¢â€â€š   Ã¢â€Å“Ã¢â€â‚¬Ã¢â€â‚¬ VerdictBanner.tsx
+Ã¢â€â€š   Ã¢â€â€š   Ã¢â€â€š   Ã¢â€â€š   Ã¢â€â€Ã¢â€â‚¬Ã¢â€â‚¬ RelationshipPath.tsx
+Ã¢â€â€š   Ã¢â€â€š   Ã¢â€â€š   Ã¢â€â€Ã¢â€â‚¬Ã¢â€â‚¬ ui/                          # PersonPicker (search-as-you-type)
+Ã¢â€â€š   Ã¢â€â€š   Ã¢â€â€Ã¢â€â‚¬Ã¢â€â‚¬ lib/
+Ã¢â€â€š   Ã¢â€â€š       Ã¢â€Å“Ã¢â€â‚¬Ã¢â€â‚¬ api.ts                # fetch wrapper, base URL from env, Bearer token
+Ã¢â€â€š   Ã¢â€â€š       Ã¢â€Å“Ã¢â€â‚¬Ã¢â€â‚¬ session.tsx           # JWT session context, persisted to localStorage
+Ã¢â€â€š   Ã¢â€â€š       Ã¢â€Å“Ã¢â€â‚¬Ã¢â€â‚¬ types.ts              # types mirroring the FastAPI schemas
+Ã¢â€â€š   Ã¢â€â€š       Ã¢â€â€Ã¢â€â‚¬Ã¢â€â‚¬ constants.ts
+Ã¢â€â€š   Ã¢â€â€š
+Ã¢â€â€š   Ã¢â€â€Ã¢â€â‚¬Ã¢â€â‚¬ api/                          # FastAPI backend
+Ã¢â€â€š       Ã¢â€Å“Ã¢â€â‚¬Ã¢â€â‚¬ Dockerfile
+Ã¢â€â€š       Ã¢â€Å“Ã¢â€â‚¬Ã¢â€â‚¬ README.md                  # Render deployment notes
+Ã¢â€â€š       Ã¢â€Å“Ã¢â€â‚¬Ã¢â€â‚¬ pyproject.toml            # or requirements.txt
+Ã¢â€â€š       Ã¢â€Å“Ã¢â€â‚¬Ã¢â€â‚¬ alembic.ini
+Ã¢â€â€š       Ã¢â€Å“Ã¢â€â‚¬Ã¢â€â‚¬ alembic/
+Ã¢â€â€š       Ã¢â€â€š   Ã¢â€â€Ã¢â€â‚¬Ã¢â€â‚¬ versions/
+Ã¢â€â€š       Ã¢â€Å“Ã¢â€â‚¬Ã¢â€â‚¬ app/
+Ã¢â€â€š       Ã¢â€â€š   Ã¢â€Å“Ã¢â€â‚¬Ã¢â€â‚¬ main.py               # FastAPI app factory, router registration
+Ã¢â€â€š       Ã¢â€â€š   Ã¢â€Å“Ã¢â€â‚¬Ã¢â€â‚¬ config.py             # Pydantic Settings, reads env vars
+Ã¢â€â€š       Ã¢â€â€š   Ã¢â€Å“Ã¢â€â‚¬Ã¢â€â‚¬ dependencies.py       # DB sessions, current_user, pagination
+Ã¢â€â€š       Ã¢â€â€š   Ã¢â€Å“Ã¢â€â‚¬Ã¢â€â‚¬ api/
+Ã¢â€â€š       Ã¢â€â€š   Ã¢â€â€š   Ã¢â€â€Ã¢â€â‚¬Ã¢â€â‚¬ v1/
+Ã¢â€â€š       Ã¢â€â€š   Ã¢â€â€š       Ã¢â€Å“Ã¢â€â‚¬Ã¢â€â‚¬ router.py
+Ã¢â€â€š       Ã¢â€â€š   Ã¢â€â€š       Ã¢â€Å“Ã¢â€â‚¬Ã¢â€â‚¬ endpoints/
+Ã¢â€â€š       Ã¢â€â€š   Ã¢â€â€š       Ã¢â€â€š   Ã¢â€Å“Ã¢â€â‚¬Ã¢â€â‚¬ auth.py
+Ã¢â€â€š       Ã¢â€â€š   Ã¢â€â€š       Ã¢â€â€š   Ã¢â€Å“Ã¢â€â‚¬Ã¢â€â‚¬ persons.py
+Ã¢â€â€š       Ã¢â€â€š   Ã¢â€â€š       Ã¢â€â€š   Ã¢â€Å“Ã¢â€â‚¬Ã¢â€â‚¬ families.py
+Ã¢â€â€š       Ã¢â€â€š   Ã¢â€â€š       Ã¢â€â€š   Ã¢â€Å“Ã¢â€â‚¬Ã¢â€â‚¬ family_tree.py
+Ã¢â€â€š       Ã¢â€â€š   Ã¢â€â€š       Ã¢â€â€š   Ã¢â€Å“Ã¢â€â‚¬Ã¢â€â‚¬ kinship.py
+Ã¢â€â€š       Ã¢â€â€š   Ã¢â€â€š       Ã¢â€â€š   Ã¢â€Å“Ã¢â€â‚¬Ã¢â€â‚¬ evaluation.py
+Ã¢â€â€š       Ã¢â€â€š   Ã¢â€â€š       Ã¢â€â€š   Ã¢â€â€Ã¢â€â‚¬Ã¢â€â‚¬ admin.py
+Ã¢â€â€š       Ã¢â€â€š   Ã¢â€Å“Ã¢â€â‚¬Ã¢â€â‚¬ core/
+Ã¢â€â€š       Ã¢â€â€š   Ã¢â€â€š   Ã¢â€Å“Ã¢â€â‚¬Ã¢â€â‚¬ security.py       # JWT encode/decode, password hashing
+Ã¢â€â€š       Ã¢â€â€š   Ã¢â€â€š   Ã¢â€â€Ã¢â€â‚¬Ã¢â€â‚¬ exceptions.py
+Ã¢â€â€š       Ã¢â€â€š   Ã¢â€Å“Ã¢â€â‚¬Ã¢â€â‚¬ db/
+Ã¢â€â€š       Ã¢â€â€š   Ã¢â€â€š   Ã¢â€Å“Ã¢â€â‚¬Ã¢â€â‚¬ postgres.py       # SQLAlchemy engine/session
+Ã¢â€â€š       Ã¢â€â€š   Ã¢â€â€š   Ã¢â€â€Ã¢â€â‚¬Ã¢â€â‚¬ redis_client.py
+Ã¢â€â€š       Ã¢â€â€š   Ã¢â€Å“Ã¢â€â‚¬Ã¢â€â‚¬ models/               # SQLAlchemy models (users, lineage graph, audit, metrics)
+Ã¢â€â€š       Ã¢â€â€š   Ã¢â€â€š   Ã¢â€Å“Ã¢â€â‚¬Ã¢â€â‚¬ user.py
+Ã¢â€â€š       Ã¢â€â€š   Ã¢â€â€š   Ã¢â€Å“Ã¢â€â‚¬Ã¢â€â‚¬ person.py
+Ã¢â€â€š       Ã¢â€â€š   Ã¢â€â€š   Ã¢â€Å“Ã¢â€â‚¬Ã¢â€â‚¬ kinship_edge.py
+Ã¢â€â€š       Ã¢â€â€š   Ã¢â€â€š   Ã¢â€â€Ã¢â€â‚¬Ã¢â€â‚¬ evaluation_log.py
+Ã¢â€â€š       Ã¢â€â€š   Ã¢â€Å“Ã¢â€â‚¬Ã¢â€â‚¬ graph/                # Postgres-backed graph traversal domain layer
+Ã¢â€â€š       Ã¢â€â€š   Ã¢â€â€š   Ã¢â€Å“Ã¢â€â‚¬Ã¢â€â‚¬ person_repository.py
+Ã¢â€â€š       Ã¢â€â€š   Ã¢â€â€š   Ã¢â€Å“Ã¢â€â‚¬Ã¢â€â‚¬ family_repository.py
+Ã¢â€â€š       Ã¢â€â€š   Ã¢â€â€š   Ã¢â€â€Ã¢â€â‚¬Ã¢â€â‚¬ traversal_queries.py
+Ã¢â€â€š       Ã¢â€â€š   Ã¢â€Å“Ã¢â€â‚¬Ã¢â€â‚¬ schemas/              # Pydantic request/response models
+Ã¢â€â€š       Ã¢â€â€š   Ã¢â€â€š   Ã¢â€Å“Ã¢â€â‚¬Ã¢â€â‚¬ person.py
+Ã¢â€â€š       Ã¢â€â€š   Ã¢â€â€š   Ã¢â€Å“Ã¢â€â‚¬Ã¢â€â‚¬ family.py
+Ã¢â€â€š       Ã¢â€â€š   Ã¢â€â€š   Ã¢â€Å“Ã¢â€â‚¬Ã¢â€â‚¬ kinship.py
+Ã¢â€â€š       Ã¢â€â€š   Ã¢â€â€š   Ã¢â€â€Ã¢â€â‚¬Ã¢â€â‚¬ auth.py
+Ã¢â€â€š       Ã¢â€â€š   Ã¢â€Å“Ã¢â€â‚¬Ã¢â€â‚¬ services/
+Ã¢â€â€š       Ã¢â€â€š   Ã¢â€â€š   Ã¢â€Å“Ã¢â€â‚¬Ã¢â€â‚¬ person_service.py
+Ã¢â€â€š       Ã¢â€â€š   Ã¢â€â€š   Ã¢â€Å“Ã¢â€â‚¬Ã¢â€â‚¬ family_tree_service.py
+Ã¢â€â€š       Ã¢â€â€š   Ã¢â€â€š   Ã¢â€Å“Ã¢â€â‚¬Ã¢â€â‚¬ kinship_engine.py         # the algorithm from section above
+Ã¢â€â€š       Ã¢â€â€š   Ã¢â€â€š   Ã¢â€Å“Ã¢â€â‚¬Ã¢â€â‚¬ evaluation_service.py     # accuracy / response-time / SUS aggregation
+Ã¢â€â€š       Ã¢â€â€š   Ã¢â€â€š   Ã¢â€â€Ã¢â€â‚¬Ã¢â€â‚¬ notification_service.py
+Ã¢â€â€š       Ã¢â€â€š   Ã¢â€Å“Ã¢â€â‚¬Ã¢â€â‚¬ workers/
+Ã¢â€â€š       Ã¢â€â€š   Ã¢â€â€š   Ã¢â€Å“Ã¢â€â‚¬Ã¢â€â‚¬ celery_app.py
+Ã¢â€â€š       Ã¢â€â€š   Ã¢â€â€š   Ã¢â€Å“Ã¢â€â‚¬Ã¢â€â‚¬ bulk_import_worker.py
+Ã¢â€â€š       Ã¢â€â€š   Ã¢â€â€š   Ã¢â€â€Ã¢â€â‚¬Ã¢â€â‚¬ notification_worker.py
+Ã¢â€â€š       Ã¢â€â€š   Ã¢â€â€Ã¢â€â‚¬Ã¢â€â‚¬ tests/
+Ã¢â€â€š       Ã¢â€â€š       Ã¢â€Å“Ã¢â€â‚¬Ã¢â€â‚¬ conftest.py
+Ã¢â€â€š       Ã¢â€â€š       Ã¢â€Å“Ã¢â€â‚¬Ã¢â€â‚¬ test_kinship_engine.py
+Ã¢â€â€š       Ã¢â€â€š       Ã¢â€Å“Ã¢â€â‚¬Ã¢â€â‚¬ test_person_endpoints.py
+Ã¢â€â€š       Ã¢â€â€š       Ã¢â€â€Ã¢â€â‚¬Ã¢â€â‚¬ test_evaluation.py
+Ã¢â€â€š       Ã¢â€â€Ã¢â€â‚¬Ã¢â€â‚¬ scripts/
+Ã¢â€â€š           Ã¢â€Å“Ã¢â€â‚¬Ã¢â€â‚¬ seed_data.py                  # sample African family datasets for evaluation
+Ã¢â€â€š           Ã¢â€â€Ã¢â€â‚¬Ã¢â€â‚¬ load_test.py                  # scalability tests: 100 / 1,000 / 10,000 persons
+Ã¢â€â€š
+Ã¢â€Å“Ã¢â€â‚¬Ã¢â€â‚¬ packages/
+Ã¢â€â€š   Ã¢â€Å“Ã¢â€â‚¬Ã¢â€â‚¬ shared-types/                 # TS types shared between frontend and OpenAPI-generated client
+Ã¢â€â€š   Ã¢â€â€š   Ã¢â€Å“Ã¢â€â‚¬Ã¢â€â‚¬ package.json
+Ã¢â€â€š   Ã¢â€â€š   Ã¢â€â€Ã¢â€â‚¬Ã¢â€â‚¬ src/index.ts
+Ã¢â€â€š   Ã¢â€â€Ã¢â€â‚¬Ã¢â€â‚¬ ui/                           # optional shared component library
+Ã¢â€â€š       Ã¢â€Å“Ã¢â€â‚¬Ã¢â€â‚¬ package.json
+Ã¢â€â€š       Ã¢â€â€Ã¢â€â‚¬Ã¢â€â‚¬ src/
+Ã¢â€â€š
+Ã¢â€Å“Ã¢â€â‚¬Ã¢â€â‚¬ docs/
+Ã¢â€â€š   Ã¢â€Å“Ã¢â€â‚¬Ã¢â€â‚¬ architecture.md
+Ã¢â€â€š   Ã¢â€Å“Ã¢â€â‚¬Ã¢â€â‚¬ data-model.md
+Ã¢â€â€š   Ã¢â€Å“Ã¢â€â‚¬Ã¢â€â‚¬ algorithm.md
+Ã¢â€â€š   Ã¢â€Å“Ã¢â€â‚¬Ã¢â€â‚¬ evaluation-plan.md            # SUS instrument, accuracy test protocol
+Ã¢â€â€š   Ã¢â€â€Ã¢â€â‚¬Ã¢â€â‚¬ api-reference.md              # generated/curated from FastAPI OpenAPI schema
+Ã¢â€â€š
+Ã¢â€â€Ã¢â€â‚¬Ã¢â€â‚¬ .github/
+    Ã¢â€â€Ã¢â€â‚¬Ã¢â€â‚¬ workflows/
+        Ã¢â€Å“Ã¢â€â‚¬Ã¢â€â‚¬ ci-api.yml                # lint + pytest on apps/api
+        Ã¢â€â€Ã¢â€â‚¬Ã¢â€â‚¬ ci-web.yml                # lint + build on apps/web
 ```
 
 ## Data Model
@@ -311,20 +314,20 @@ kinship-verification-platform/
 PostgreSQL stores both the application records and the graph-modeled lineage data. The lineage graph is represented with normalized entity tables and indexed edge tables, so the framework remains graph-based even without a dedicated graph database.
 
 **Graph vertices**
-- `Person` — id, full_name, gender, date_of_birth, is_deceased, clan_id, notes
-- `Family` — id, family_name, origin_community
-- `Clan` — id, clan_name, region
+- `Person` Ã¢â‚¬â€ id, full_name, gender, date_of_birth, is_deceased, clan_id, notes
+- `Family` Ã¢â‚¬â€ id, family_name, origin_community
+- `Clan` Ã¢â‚¬â€ id, clan_name, region
 
 **Graph edges**
-- `kinship_edges` — id, source_person_id, target_person_id, relationship_type, confidence_score, recorded_by, created_at
+- `kinship_edges` Ã¢â‚¬â€ id, source_person_id, target_person_id, relationship_type, confidence_score, recorded_by, created_at
 - Supported `relationship_type` values: `CHILD_OF`, `PARENT_OF`, `MARRIED_TO`, `SIBLING_OF`, `BELONGS_TO_CLAN`
 - Indexes: `(source_person_id, relationship_type)`, `(target_person_id, relationship_type)`, and `(source_person_id, target_person_id, relationship_type)` for traversal and duplicate prevention
 
 **Application tables**
 
-- `users` — auth accounts (Admin, Registrar, Elder, standard User), hashed passwords, roles
-- `audit_log` — who registered/edited which person/relationship, when
-- `evaluation_metrics` — accuracy test results, response-time samples, SUS survey responses (supports Chapter 4 evaluation directly)
+- `users` Ã¢â‚¬â€ auth accounts (Admin, Registrar, Elder, standard User), hashed passwords, roles
+- `audit_log` Ã¢â‚¬â€ who registered/edited which person/relationship, when
+- `evaluation_metrics` Ã¢â‚¬â€ accuracy test results, response-time samples, SUS survey responses (supports Chapter 4 evaluation directly)
 
 ## API Overview
 
@@ -354,10 +357,10 @@ GET    /api/v1/evaluation/sus/summary
 
 The platform is built to directly produce the four evaluation dimensions from the study:
 
-1. **Relationship Detection Accuracy** — `accuracy = correct_detections / total_tests`, computed against an expert-validated test dataset seeded via `scripts/seed_data.py`.
-2. **Response Time** — average and max query time for `/api/v1/kinship/verify`, logged per request into `evaluation_metrics` and exposed via `/api/v1/evaluation/performance`.
-3. **Scalability** — load-tested at 100, 1,000, and 10,000 `Person` vertices using `scripts/load_test.py` against the PostgreSQL edge-table graph and API deployment.
-4. **Usability (SUS)** — a 10-item System Usability Scale survey collected in-app after user testing sessions, aggregated by `/api/v1/evaluation/sus/summary` (interpretation: ≥68 acceptable, ≥80 excellent).
+1. **Relationship Detection Accuracy** Ã¢â‚¬â€ `accuracy = correct_detections / total_tests`, computed against an expert-validated test dataset seeded via `scripts/seed_data.py`.
+2. **Response Time** Ã¢â‚¬â€ average and max query time for `/api/v1/kinship/verify`, logged per request into `evaluation_metrics` and exposed via `/api/v1/evaluation/performance`.
+3. **Scalability** Ã¢â‚¬â€ load-tested at 100, 1,000, and 10,000 `Person` vertices using `scripts/load_test.py` against the PostgreSQL edge-table graph and API deployment.
+4. **Usability (SUS)** Ã¢â‚¬â€ a 10-item System Usability Scale survey collected in-app after user testing sessions, aggregated by `/api/v1/evaluation/sus/summary` (interpretation: Ã¢â€°Â¥68 acceptable, Ã¢â€°Â¥80 excellent).
 
 ## Local Development
 

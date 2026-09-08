@@ -8,6 +8,8 @@ from app.schemas.kinship import (
     KinshipRelationship,
     KinshipStatus,
     KinshipVerifyResponse,
+    MarriageDecision,
+    MarriageEligibilityResponse,
     RelationshipPathStep,
 )
 from app.schemas.person import RelationshipType
@@ -15,9 +17,15 @@ from app.services.person_service import PersonService
 
 
 class KinshipEngine:
-    def __init__(self, person_service: PersonService, relatedness_threshold_degree: int) -> None:
+    def __init__(
+        self,
+        person_service: PersonService,
+        relatedness_threshold_degree: int,
+        marriage_minimum_degree: int,
+    ) -> None:
         self.person_service = person_service
         self.relatedness_threshold_degree = relatedness_threshold_degree
+        self.marriage_minimum_degree = marriage_minimum_degree
 
     async def verify_relationship(
         self,
@@ -38,6 +46,12 @@ class KinshipEngine:
 
         await self.person_service.get_person(session, person_a_id)
         await self.person_service.get_person(session, person_b_id)
+
+        explicit_relationship = await self._explicit_pair_relationship(
+            session, person_a_id, person_b_id
+        )
+        if explicit_relationship is not None:
+            return explicit_relationship
 
         parent_map = await self._parent_map(session)
         ancestors_a = self._ancestor_distances(person_a_id, parent_map)
@@ -67,11 +81,6 @@ class KinshipEngine:
         shared_ancestors = set(ancestors_a).intersection(ancestors_b)
 
         if not shared_ancestors:
-            explicit_relationship = await self._explicit_pair_relationship(
-                session, person_a_id, person_b_id
-            )
-            if explicit_relationship is not None:
-                return explicit_relationship
             return KinshipVerifyResponse(
                 status=KinshipStatus.unrelated,
                 relationship=KinshipRelationship.unrelated,
@@ -101,6 +110,53 @@ class KinshipEngine:
             message=f"Shared ancestor found. The records are {relationship.value.lower()}.",
         )
 
+    async def assess_marriage(
+        self,
+        session: AsyncSession,
+        person_a_id: UUID,
+        person_b_id: UUID,
+    ) -> MarriageEligibilityResponse:
+        result = await self.verify_relationship(session, person_a_id, person_b_id)
+        blocked_relationships = {
+            KinshipRelationship.same_person,
+            KinshipRelationship.parent_child,
+            KinshipRelationship.grandparent_grandchild,
+            KinshipRelationship.direct_ancestor,
+            KinshipRelationship.siblings,
+            KinshipRelationship.aunt_uncle,
+            KinshipRelationship.first_cousins,
+            KinshipRelationship.spouses,
+        }
+        is_allowed = (
+            result.relationship not in blocked_relationships
+            and (result.degree is None or result.degree >= self.marriage_minimum_degree)
+        )
+        if result.relationship == KinshipRelationship.spouses:
+            message = "These records are already marked as spouses."
+        elif result.relationship in blocked_relationships:
+            message = (
+                f"Marriage is not permitted for the recorded relationship: "
+                f"{result.relationship.value}."
+            )
+        elif result.degree is None:
+            message = "No shared ancestor was found in the recorded lineage graph."
+        else:
+            message = (
+                f"The relationship is {result.relationship.value}. "
+                f"The computed degree meets the minimum allowed degree of "
+                f"{self.marriage_minimum_degree}."
+            )
+        return MarriageEligibilityResponse(
+            can_marry=is_allowed,
+            decision=(
+                MarriageDecision.eligible if is_allowed else MarriageDecision.not_eligible
+            ),
+            relationship=result.relationship,
+            degree=result.degree,
+            common_ancestor_id=result.common_ancestor_id,
+            path=result.path,
+            message=message,
+        )
     def _status_for_degree(self, degree: int) -> KinshipStatus:
         return (
             KinshipStatus.closely_related

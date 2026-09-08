@@ -1,0 +1,76 @@
+<mxfile host="app.diagrams.net" modified="2026-09-07T00:00:00.000Z" agent="Kinship" version="24.7.17">
+  <diagram id="erd" name="Entity Relationship Diagram">
+    <mxGraphModel fold="1" pageWidth="1750" dx="1400" tooltips="1" guides="1" connect="1" grid="1" shadow="0" math="0" pageHeight="950" dy="900" gridSize="10" pageScale="1" page="1" arrows="1">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="title" value="Entity Relationship Diagram - PostgreSQL Schema" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=24;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="25" y="10" width="760" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="clans" value="&lt;b&gt;CLANS&lt;/b&gt;&lt;hr&gt;PK id VARCHAR(36)&lt;br&gt;UQ clan_name VARCHAR(200)&lt;br&gt;region VARCHAR(200) NULL&lt;br&gt;created_at TIMESTAMPTZ" style="shape=table;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#334155;" vertex="1" parent="1">
+          <mxGeometry x="40" y="90" width="300" height="160" as="geometry" />
+        </mxCell>
+        <mxCell id="families" value="&lt;b&gt;FAMILIES&lt;/b&gt;&lt;hr&gt;PK id VARCHAR(36)&lt;br&gt;family_name VARCHAR(200)&lt;br&gt;origin_community VARCHAR(200) NULL&lt;br&gt;FK clan_id VARCHAR(36) NULL&lt;br&gt;created_at TIMESTAMPTZ" style="shape=table;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#334155;" vertex="1" parent="1">
+          <mxGeometry x="40" y="350" width="310" height="185" as="geometry" />
+        </mxCell>
+        <mxCell id="persons" value="&lt;b&gt;PERSONS&lt;/b&gt;&lt;hr&gt;PK id VARCHAR(36)&lt;br&gt;full_name VARCHAR(200)&lt;br&gt;email VARCHAR(320) NULL&lt;br&gt;phone_number VARCHAR(32) NULL&lt;br&gt;gender VARCHAR(20)&lt;br&gt;date_of_birth DATE NULL&lt;br&gt;is_deceased BOOLEAN&lt;br&gt;FK clan_id VARCHAR(36) NULL&lt;br&gt;FK family_id VARCHAR(36) NULL&lt;br&gt;origin_community VARCHAR(200) NULL&lt;br&gt;notes TEXT NULL&lt;br&gt;created_at TIMESTAMPTZ&lt;br&gt;updated_at TIMESTAMPTZ" style="shape=table;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#334155;" vertex="1" parent="1">
+          <mxGeometry x="430" y="90" width="340" height="315" as="geometry" />
+        </mxCell>
+        <mxCell id="edges" value="&lt;b&gt;KINSHIP_EDGES&lt;/b&gt;&lt;hr&gt;PK id VARCHAR(36)&lt;br&gt;FK source_person_id VARCHAR(36)&lt;br&gt;FK target_person_id VARCHAR(36)&lt;br&gt;relationship_type VARCHAR(50)&lt;br&gt;confidence_score FLOAT&lt;br&gt;FK recorded_by VARCHAR(36) NULL&lt;br&gt;created_at TIMESTAMPTZ&lt;br&gt;UQ (source, target, type)" style="shape=table;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#334155;" vertex="1" parent="1">
+          <mxGeometry x="430" y="520" width="340" height="245" as="geometry" />
+        </mxCell>
+        <mxCell id="users" value="&lt;b&gt;USERS&lt;/b&gt;&lt;hr&gt;PK id VARCHAR(36)&lt;br&gt;full_name VARCHAR(200)&lt;br&gt;UQ email VARCHAR(320)&lt;br&gt;phone_number VARCHAR(32) NULL&lt;br&gt;password_hash VARCHAR(255)&lt;br&gt;role VARCHAR(50)&lt;br&gt;is_active BOOLEAN&lt;br&gt;created_at TIMESTAMPTZ&lt;br&gt;updated_at TIMESTAMPTZ" style="shape=table;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#334155;" vertex="1" parent="1">
+          <mxGeometry x="870" y="90" width="330" height="255" as="geometry" />
+        </mxCell>
+        <mxCell id="disputes" value="&lt;b&gt;DISPUTES&lt;/b&gt;&lt;hr&gt;PK id VARCHAR(36)&lt;br&gt;FK submitted_by VARCHAR(36)&lt;br&gt;entity_type VARCHAR(50)&lt;br&gt;entity_id VARCHAR(36)&lt;br&gt;reason TEXT&lt;br&gt;status VARCHAR(30)&lt;br&gt;resolution_notes TEXT NULL&lt;br&gt;FK resolved_by VARCHAR(36) NULL&lt;br&gt;created_at TIMESTAMPTZ&lt;br&gt;updated_at TIMESTAMPTZ" style="shape=table;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#334155;" vertex="1" parent="1">
+          <mxGeometry x="870" y="455" width="340" height="280" as="geometry" />
+        </mxCell>
+        <mxCell id="audit" value="&lt;b&gt;AUDIT_LOGS&lt;/b&gt;&lt;hr&gt;PK id VARCHAR(36)&lt;br&gt;FK actor_user_id VARCHAR(36) NULL&lt;br&gt;action VARCHAR(100)&lt;br&gt;entity_type VARCHAR(50)&lt;br&gt;entity_id VARCHAR(36) NULL&lt;br&gt;details TEXT NULL&lt;br&gt;created_at TIMESTAMPTZ" style="shape=table;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#334155;" vertex="1" parent="1">
+          <mxGeometry x="1300" y="90" width="330" height="220" as="geometry" />
+        </mxCell>
+        <mxCell id="metrics" value="&lt;b&gt;EVALUATION_METRICS&lt;/b&gt;&lt;hr&gt;PK id VARCHAR(36)&lt;br&gt;metric_type VARCHAR(80)&lt;br&gt;expected_status VARCHAR(80) NULL&lt;br&gt;actual_status VARCHAR(80) NULL&lt;br&gt;response_time_ms FLOAT NULL&lt;br&gt;sus_score FLOAT NULL&lt;br&gt;FK submitted_by VARCHAR(36) NULL&lt;br&gt;created_at TIMESTAMPTZ" style="shape=table;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#334155;" vertex="1" parent="1">
+          <mxGeometry x="1300" y="440" width="350" height="245" as="geometry" />
+        </mxCell>
+        <mxCell id="note" value="DISPUTES.entity_id and AUDIT_LOGS.entity_id are polymorphic identifiers, not database foreign keys." style="shape=note;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#a16207;" vertex="1" parent="1">
+          <mxGeometry x="1260" y="780" width="390" height="85" as="geometry" />
+        </mxCell>
+        <mxCell id="d1" value="Clan 0..1 / Families 0..*" style="endArrow=none;html=1;rounded=0;strokeColor=#475569;" edge="1" parent="1" source="clans" target="families">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="d2" value="Clan 0..1 / Persons 0..*" style="endArrow=none;html=1;rounded=0;strokeColor=#475569;" edge="1" parent="1" source="clans" target="persons">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="d3" value="Family 0..1 / Persons 0..*" style="endArrow=none;html=1;rounded=0;strokeColor=#475569;" edge="1" parent="1" source="families" target="persons">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="d4" value="source Person 1 / Edges 0..*" style="endArrow=none;html=1;rounded=0;strokeColor=#475569;" edge="1" parent="1" source="persons" target="edges">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="d5" value="target Person 1 / Edges 0..*" style="endArrow=none;html=1;rounded=0;strokeColor=#475569;" edge="1" parent="1" source="persons" target="edges">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="d6" value="Recorder 0..1 / Edges 0..*" style="endArrow=none;html=1;rounded=0;strokeColor=#475569;" edge="1" parent="1" source="users" target="edges">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="d7" value="Submitter 1 / Disputes 0..*" style="endArrow=none;html=1;rounded=0;strokeColor=#475569;" edge="1" parent="1" source="users" target="disputes">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="d8" value="Resolver 0..1 / Disputes 0..*" style="endArrow=none;html=1;rounded=0;strokeColor=#475569;" edge="1" parent="1" source="users" target="disputes">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="d9" value="Actor 0..1 / Logs 0..*" style="endArrow=none;html=1;rounded=0;strokeColor=#475569;" edge="1" parent="1" source="users" target="audit">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="d10" value="Submitter 0..1 / Metrics 0..*" style="endArrow=none;html=1;rounded=0;strokeColor=#475569;" edge="1" parent="1" source="users" target="metrics">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="d11" value="" style="endArrow=none;dashed=1;html=1;strokeColor=#a16207;" edge="1" parent="1" source="note" target="disputes">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="d12" value="" style="endArrow=none;dashed=1;html=1;strokeColor=#a16207;" edge="1" parent="1" source="note" target="audit">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

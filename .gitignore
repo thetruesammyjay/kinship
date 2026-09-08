@@ -48,6 +48,9 @@ yarn-error.log*
 *.db
 uploads/
 media/
+!docs/media/
+!docs/media/*.drawio
+!docs/media/README.md
 storage/
 
 # Alembic/runtime artifacts

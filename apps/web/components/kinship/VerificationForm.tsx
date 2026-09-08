@@ -7,10 +7,17 @@ import type { PersonRead } from "@/lib/types";
 
 type VerificationFormProps = {
   onVerify: (personAId: string, personBId: string) => void;
+  onMarriageCheck: (personAId: string, personBId: string) => void;
   busy?: boolean;
+  marriageBusy?: boolean;
 };
 
-export function VerificationForm({ onVerify, busy }: VerificationFormProps) {
+export function VerificationForm({
+  onVerify,
+  onMarriageCheck,
+  busy,
+  marriageBusy,
+}: VerificationFormProps) {
   const [personA, setPersonA] = useState<PersonRead | null>(null);
   const [personB, setPersonB] = useState<PersonRead | null>(null);
 
@@ -40,7 +47,17 @@ export function VerificationForm({ onVerify, busy }: VerificationFormProps) {
         onClick={() => personA && personB && onVerify(personA.id, personB.id)}
       >
         <Play size={18} />
-        {busy ? "Checking…" : "Run check"}
+        {busy ? "CheckingÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¦" : "Run check"}
+      </button>
+      <button
+        className="btng full"
+        type="button"
+        disabled={!personA || !personB || marriageBusy}
+        onClick={() =>
+          personA && personB && onMarriageCheck(personA.id, personB.id)
+        }
+      >
+        {marriageBusy ? "Checking eligibility..." : "Check marriage eligibility"}
       </button>
     </section>
   );

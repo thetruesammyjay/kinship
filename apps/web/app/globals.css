@@ -1,7 +1,7 @@
 @import "tailwindcss";
 
 /* ============================================================
-   KINSHIP — design tokens (pink; naming follows the ChumBucket
+   KINSHIP â€” design tokens (pink; naming follows the ChumBucket
    example's @theme conventions)
    ============================================================ */
 @theme {
@@ -213,7 +213,7 @@ button {
 }
 
 /* ============================================================
-   App shell — LeftRail (desktop) + BottomNav (mobile), 1:1 with
+   App shell â€” LeftRail (desktop) + BottomNav (mobile), 1:1 with
    the example's .app/.lrail/.bottomnav structure
    ============================================================ */
 .app {
@@ -373,7 +373,7 @@ button {
 }
 
 /* ============================================================
-   App pages — panels, metrics, verify, tree
+   App pages â€” panels, metrics, verify, tree
    ============================================================ */
 .content-stack {
   display: grid;
@@ -1562,4 +1562,23 @@ button {
   html {
     scroll-behavior: auto;
   }
+}
+
+.marriage-result {
+  border: 2px solid var(--color-border);
+}
+.marriage-result.allowed {
+  border-color: #2c8a62;
+}
+.marriage-result.blocked {
+  border-color: var(--color-pink);
+}
+.marriage-result strong {
+  display: block;
+  margin-top: 12px;
+  font-size: 22px;
+}
+
+.btng.full {
+  width: 100%;
 }

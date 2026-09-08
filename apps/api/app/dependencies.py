@@ -56,6 +56,7 @@ def get_kinship_engine() -> KinshipEngine:
     return KinshipEngine(
         person_service=person_service,
         relatedness_threshold_degree=get_settings().relatedness_threshold_degree,
+        marriage_minimum_degree=get_settings().marriage_minimum_degree,
     )
 
 

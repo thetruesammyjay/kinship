@@ -69,6 +69,7 @@ Add these values under the Render service's **Environment** page.
 | `JWT_ALGORITHM` | `HS256` |
 | `ACCESS_TOKEN_EXPIRE_MINUTES` | `60` |
 | `RELATEDNESS_THRESHOLD_DEGREE` | `2` |
+| `MARRIAGE_MINIMUM_DEGREE` | `5` |
 | `CORS_ORIGINS` | `https://<your-vercel-project>.vercel.app` |
 
 Set `BOOTSTRAP_ADMIN_EMAIL` before creating the first production account, then register with that
@@ -96,10 +97,12 @@ uv run alembic current
 cd ../..
 ```
 
+Marriage eligibility uses the configurable MARRIAGE_MINIMUM_DEGREE setting (default 5). A pair with no shared ancestor is eligible; direct ancestors and relationships closer than second cousins are not. This is a genealogical screening rule, not legal advice.
+
 The expected current revision is:
 
 ```text
-202608120001
+202609070001
 ```
 
 The initial seed migration runs only when Alembic applies its revision for the first time. Normal

@@ -1,0 +1,115 @@
+<mxfile host="app.diagrams.net" modified="2026-09-07T00:00:00.000Z" agent="Kinship" version="24.7.17">
+  <diagram id="marriage-flow" name="Flowchart - Marriage Eligibility">
+    <mxGraphModel fold="1" pageWidth="1250" dx="1400" tooltips="1" guides="1" connect="1" grid="1" shadow="0" math="0" pageHeight="1350" dy="900" gridSize="10" pageScale="1" page="1" arrows="1">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="title" value="Flowchart - Marriage Eligibility Algorithm" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=24;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="25" y="10" width="720" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="start" value="Receive Person A and Person B IDs" style="ellipse;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#3f7d3a;strokeWidth=1.5;" vertex="1" parent="1">
+          <mxGeometry x="430" y="70" width="280" height="58" as="geometry" />
+        </mxCell>
+        <mxCell id="verify" value="Run verify_relationship(A, B)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#334155;strokeWidth=1.5;" vertex="1" parent="1">
+          <mxGeometry x="440" y="170" width="260" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="same" value="Relationship is Same person?" style="rhombus;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#a16207;strokeWidth=1.5;" vertex="1" parent="1">
+          <mxGeometry x="430" y="275" width="280" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="spouse" value="Relationship is Spouses?" style="rhombus;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#a16207;strokeWidth=1.5;" vertex="1" parent="1">
+          <mxGeometry x="430" y="440" width="280" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="blockedrel" value="Parent-child, Grandparent, Direct ancestor, Siblings, Aunt/uncle, or First cousins?" style="rhombus;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#a16207;strokeWidth=1.5;" vertex="1" parent="1">
+          <mxGeometry x="385" y="605" width="370" height="125" as="geometry" />
+        </mxCell>
+        <mxCell id="degree" value="Degree is null?" style="rhombus;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#a16207;strokeWidth=1.5;" vertex="1" parent="1">
+          <mxGeometry x="455" y="795" width="230" height="95" as="geometry" />
+        </mxCell>
+        <mxCell id="threshold" value="Degree &gt;= configured minimum (5)?" style="rhombus;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#a16207;strokeWidth=1.5;" vertex="1" parent="1">
+          <mxGeometry x="405" y="950" width="330" height="110" as="geometry" />
+        </mxCell>
+        <mxCell id="noSame" value="Not eligible: same record" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;strokeWidth=1.5;" vertex="1" parent="1">
+          <mxGeometry x="55" y="295" width="250" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="noSpouse" value="Not eligible: already spouses" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;strokeWidth=1.5;" vertex="1" parent="1">
+          <mxGeometry x="55" y="460" width="250" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="noClose" value="Not eligible: prohibited recorded relationship" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;strokeWidth=1.5;" vertex="1" parent="1">
+          <mxGeometry x="815" y="635" width="300" height="68" as="geometry" />
+        </mxCell>
+        <mxCell id="yesNone" value="Eligible: no shared ancestor found in recorded graph" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#3f7d3a;strokeWidth=1.5;" vertex="1" parent="1">
+          <mxGeometry x="55" y="810" width="310" height="68" as="geometry" />
+        </mxCell>
+        <mxCell id="yesFar" value="Eligible: relationship meets minimum degree" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#3f7d3a;strokeWidth=1.5;" vertex="1" parent="1">
+          <mxGeometry x="55" y="975" width="300" height="68" as="geometry" />
+        </mxCell>
+        <mxCell id="noDegree" value="Not eligible: degree below 5" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;strokeWidth=1.5;" vertex="1" parent="1">
+          <mxGeometry x="820" y="975" width="270" height="68" as="geometry" />
+        </mxCell>
+        <mxCell id="result" value="Return can_marry, decision, relationship, degree, path and reason" style="ellipse;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#3f7d3a;strokeWidth=1.5;" vertex="1" parent="1">
+          <mxGeometry x="390" y="1140" width="380" height="68" as="geometry" />
+        </mxCell>
+        <mxCell id="note" value="Decision is limited to the completeness and accuracy of recorded lineage data." style="shape=note;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#a16207;" vertex="1" parent="1">
+          <mxGeometry x="810" y="1130" width="330" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="e1" value="" style="endArrow=block;html=1;rounded=0;" edge="1" parent="1" source="start" target="verify">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e2" value="" style="endArrow=block;html=1;rounded=0;" edge="1" parent="1" source="verify" target="same">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e3" value="Yes" style="endArrow=block;html=1;rounded=0;" edge="1" parent="1" source="same" target="noSame">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e4" value="No" style="endArrow=block;html=1;rounded=0;" edge="1" parent="1" source="same" target="spouse">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e5" value="Yes" style="endArrow=block;html=1;rounded=0;" edge="1" parent="1" source="spouse" target="noSpouse">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e6" value="No" style="endArrow=block;html=1;rounded=0;" edge="1" parent="1" source="spouse" target="blockedrel">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e7" value="Yes" style="endArrow=block;html=1;rounded=0;" edge="1" parent="1" source="blockedrel" target="noClose">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e8" value="No" style="endArrow=block;html=1;rounded=0;" edge="1" parent="1" source="blockedrel" target="degree">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e9" value="Yes" style="endArrow=block;html=1;rounded=0;" edge="1" parent="1" source="degree" target="yesNone">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e10" value="No" style="endArrow=block;html=1;rounded=0;" edge="1" parent="1" source="degree" target="threshold">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e11" value="Yes" style="endArrow=block;html=1;rounded=0;" edge="1" parent="1" source="threshold" target="yesFar">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e12" value="No" style="endArrow=block;html=1;rounded=0;" edge="1" parent="1" source="threshold" target="noDegree">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e13" value="" style="endArrow=block;html=1;rounded=0;" edge="1" parent="1" source="noSame" target="result">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e14" value="" style="endArrow=block;html=1;rounded=0;" edge="1" parent="1" source="noSpouse" target="result">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e15" value="" style="endArrow=block;html=1;rounded=0;" edge="1" parent="1" source="noClose" target="result">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e16" value="" style="endArrow=block;html=1;rounded=0;" edge="1" parent="1" source="yesNone" target="result">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e17" value="" style="endArrow=block;html=1;rounded=0;" edge="1" parent="1" source="yesFar" target="result">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e18" value="" style="endArrow=block;html=1;rounded=0;" edge="1" parent="1" source="noDegree" target="result">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e19" value="" style="endArrow=none;dashed=1;html=1;strokeColor=#a16207;" edge="1" parent="1" source="note" target="result">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

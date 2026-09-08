@@ -25,6 +25,11 @@ class KinshipRelationship(StrEnum):
     unrelated = "Unrelated"
 
 
+class MarriageDecision(StrEnum):
+    eligible = "Eligible to marry"
+    not_eligible = "Not eligible to marry"
+
+
 class KinshipVerifyRequest(BaseModel):
     person_a_id: UUID
     person_b_id: UUID
@@ -37,6 +42,21 @@ class RelationshipPathStep(BaseModel):
 
 class KinshipVerifyResponse(BaseModel):
     status: KinshipStatus
+    relationship: KinshipRelationship
+    degree: int | None
+    common_ancestor_id: UUID | None
+    path: list[RelationshipPathStep]
+    message: str
+
+
+class MarriageEligibilityRequest(BaseModel):
+    person_a_id: UUID
+    person_b_id: UUID
+
+
+class MarriageEligibilityResponse(BaseModel):
+    can_marry: bool
+    decision: MarriageDecision
     relationship: KinshipRelationship
     degree: int | None
     common_ancestor_id: UUID | None

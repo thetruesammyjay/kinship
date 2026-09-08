@@ -1,0 +1,109 @@
+<mxfile host="app.diagrams.net" modified="2026-09-07T00:00:00.000Z" agent="Kinship" version="24.7.17">
+  <diagram id="sequence-kinship" name="Sequence - Kinship Verification">
+    <mxGraphModel fold="1" pageWidth="1450" dx="1400" tooltips="1" guides="1" connect="1" grid="1" shadow="0" math="0" pageHeight="950" dy="900" gridSize="10" pageScale="1" page="1" arrows="1">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="title" value="Sequence Diagram - Kinship Verification" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=24;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="30" y="10" width="650" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="actor" value="User" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;strokeColor=#1f2937;" vertex="1" parent="1">
+          <mxGeometry x="45" y="70" width="80" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="web" value="Web UI" style="shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;html=1;fillColor=#f8fafc;strokeColor=#334155;" vertex="1" parent="1">
+          <mxGeometry x="215" y="70" width="125" height="720" as="geometry" />
+        </mxCell>
+        <mxCell id="api" value="Kinship Router" style="shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;html=1;fillColor=#f8fafc;strokeColor=#334155;" vertex="1" parent="1">
+          <mxGeometry x="430" y="70" width="140" height="720" as="geometry" />
+        </mxCell>
+        <mxCell id="engine" value="KinshipEngine" style="shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;html=1;fillColor=#f8fafc;strokeColor=#334155;" vertex="1" parent="1">
+          <mxGeometry x="665" y="70" width="150" height="720" as="geometry" />
+        </mxCell>
+        <mxCell id="service" value="PersonService" style="shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;html=1;fillColor=#f8fafc;strokeColor=#334155;" vertex="1" parent="1">
+          <mxGeometry x="910" y="70" width="150" height="720" as="geometry" />
+        </mxCell>
+        <mxCell id="db" value="PostgreSQL" style="shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;html=1;fillColor=#f8fafc;strokeColor=#334155;" vertex="1" parent="1">
+          <mxGeometry x="1160" y="70" width="145" height="720" as="geometry" />
+        </mxCell>
+        <mxCell id="m1" value="1. Select Person A and Person B" style="endArrow=block;html=1;rounded=0;strokeColor=#334155;" edge="1" parent="1" source="actor" target="web">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="0" y="190" as="sourcePoint" />
+            <mxPoint x="0" y="190" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="m2" value="2. POST /api/v1/kinship/verify" style="endArrow=block;html=1;rounded=0;strokeColor=#334155;" edge="1" parent="1" source="web" target="api">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="0" y="250" as="sourcePoint" />
+            <mxPoint x="0" y="250" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="m3" value="3. verify_relationship(A, B)" style="endArrow=block;html=1;rounded=0;strokeColor=#334155;" edge="1" parent="1" source="api" target="engine">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="0" y="310" as="sourcePoint" />
+            <mxPoint x="0" y="310" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="m4" value="4. get_person(A), get_person(B)" style="endArrow=block;html=1;rounded=0;strokeColor=#334155;" edge="1" parent="1" source="engine" target="service">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="0" y="370" as="sourcePoint" />
+            <mxPoint x="0" y="370" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="m5" value="5. SELECT persons by id" style="endArrow=block;html=1;rounded=0;strokeColor=#334155;" edge="1" parent="1" source="service" target="db">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="0" y="425" as="sourcePoint" />
+            <mxPoint x="0" y="425" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="m6" value="6. Person records / 404" style="endArrow=open;html=1;rounded=0;dashed=1;strokeColor=#64748b;" edge="1" parent="1" source="db" target="service">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="0" y="475" as="sourcePoint" />
+            <mxPoint x="0" y="475" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="m7" value="7. relationships()" style="endArrow=block;html=1;rounded=0;strokeColor=#334155;" edge="1" parent="1" source="engine" target="service">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="0" y="525" as="sourcePoint" />
+            <mxPoint x="0" y="525" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="m8" value="8. SELECT kinship_edges" style="endArrow=block;html=1;rounded=0;strokeColor=#334155;" edge="1" parent="1" source="service" target="db">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="0" y="575" as="sourcePoint" />
+            <mxPoint x="0" y="575" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="m9" value="9. Relationship rows" style="endArrow=open;html=1;rounded=0;dashed=1;strokeColor=#64748b;" edge="1" parent="1" source="db" target="service">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="0" y="625" as="sourcePoint" />
+            <mxPoint x="0" y="625" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="m10" value="10. Explicit pair check; build parent map; BFS; classify" style="endArrow=block;html=1;rounded=0;strokeColor=#334155;" edge="1" parent="1" source="engine" target="engine">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="0" y="675" as="sourcePoint" />
+            <mxPoint x="0" y="675" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="m11" value="11. KinshipVerifyResponse" style="endArrow=open;html=1;rounded=0;dashed=1;strokeColor=#64748b;" edge="1" parent="1" source="engine" target="api">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="0" y="735" as="sourcePoint" />
+            <mxPoint x="0" y="735" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="m12" value="12. JSON: status, relationship, degree, path, message" style="endArrow=open;html=1;rounded=0;dashed=1;strokeColor=#64748b;" edge="1" parent="1" source="api" target="web">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="0" y="785" as="sourcePoint" />
+            <mxPoint x="0" y="785" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="m13" value="13. Display explainable result" style="endArrow=open;html=1;rounded=0;dashed=1;strokeColor=#64748b;" edge="1" parent="1" source="web" target="actor">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="0" y="835" as="sourcePoint" />
+            <mxPoint x="0" y="835" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

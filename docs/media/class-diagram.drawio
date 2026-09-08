@@ -1,0 +1,70 @@
+<mxfile host="app.diagrams.net" modified="2026-09-07T00:00:00.000Z" agent="Kinship" version="24.7.17">
+  <diagram id="class" name="Class Diagram">
+    <mxGraphModel fold="1" pageWidth="1700" dx="1400" tooltips="1" guides="1" connect="1" grid="1" shadow="0" math="0" pageHeight="1000" dy="900" gridSize="10" pageScale="1" page="1" arrows="1">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="title" value="Class Diagram - Core Kinship Domain and Services" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=24;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="25" y="10" width="760" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="clan" value="&lt;b&gt;Clan&lt;/b&gt;&lt;hr&gt;id: str&lt;br&gt;clan_name: str&lt;br&gt;region: str?&lt;br&gt;created_at: datetime" style="swimlane;fontStyle=0;childLayout=stackLayout;horizontal=1;startSize=30;rounded=0;html=1;fillColor=#ffffff;swimlaneFillColor=#f1f5f9;strokeColor=#334155;" vertex="1" parent="1">
+          <mxGeometry x="45" y="90" width="240" height="160" as="geometry" />
+        </mxCell>
+        <mxCell id="family" value="&lt;b&gt;Family&lt;/b&gt;&lt;hr&gt;id: str&lt;br&gt;family_name: str&lt;br&gt;origin_community: str?&lt;br&gt;clan_id: str?&lt;br&gt;created_at: datetime" style="swimlane;fontStyle=0;childLayout=stackLayout;horizontal=1;startSize=30;rounded=0;html=1;fillColor=#ffffff;swimlaneFillColor=#f1f5f9;strokeColor=#334155;" vertex="1" parent="1">
+          <mxGeometry x="45" y="350" width="250" height="180" as="geometry" />
+        </mxCell>
+        <mxCell id="person" value="&lt;b&gt;Person&lt;/b&gt;&lt;hr&gt;id: str&lt;br&gt;full_name: str&lt;br&gt;email: str?&lt;br&gt;phone_number: str?&lt;br&gt;gender: str&lt;br&gt;date_of_birth: date?&lt;br&gt;is_deceased: bool&lt;br&gt;clan_id: str?&lt;br&gt;family_id: str?&lt;br&gt;origin_community: str?&lt;br&gt;notes: str?&lt;br&gt;created_at: datetime&lt;br&gt;updated_at: datetime" style="swimlane;fontStyle=0;childLayout=stackLayout;horizontal=1;startSize=30;rounded=0;html=1;fillColor=#ffffff;swimlaneFillColor=#f1f5f9;strokeColor=#334155;" vertex="1" parent="1">
+          <mxGeometry x="390" y="90" width="280" height="300" as="geometry" />
+        </mxCell>
+        <mxCell id="edge" value="&lt;b&gt;KinshipEdge&lt;/b&gt;&lt;hr&gt;id: str&lt;br&gt;source_person_id: str&lt;br&gt;target_person_id: str&lt;br&gt;relationship_type: str&lt;br&gt;confidence_score: float&lt;br&gt;recorded_by: str?&lt;br&gt;created_at: datetime" style="swimlane;fontStyle=0;childLayout=stackLayout;horizontal=1;startSize=30;rounded=0;html=1;fillColor=#ffffff;swimlaneFillColor=#f1f5f9;strokeColor=#334155;" vertex="1" parent="1">
+          <mxGeometry x="390" y="500" width="280" height="220" as="geometry" />
+        </mxCell>
+        <mxCell id="user" value="&lt;b&gt;User&lt;/b&gt;&lt;hr&gt;id: str&lt;br&gt;full_name: str&lt;br&gt;email: str&lt;br&gt;phone_number: str?&lt;br&gt;password_hash: str&lt;br&gt;role: str&lt;br&gt;is_active: bool&lt;br&gt;created_at: datetime&lt;br&gt;updated_at: datetime" style="swimlane;fontStyle=0;childLayout=stackLayout;horizontal=1;startSize=30;rounded=0;html=1;fillColor=#ffffff;swimlaneFillColor=#f1f5f9;strokeColor=#334155;" vertex="1" parent="1">
+          <mxGeometry x="45" y="650" width="270" height="245" as="geometry" />
+        </mxCell>
+        <mxCell id="service" value="&lt;b&gt;PersonService&lt;/b&gt;&lt;hr&gt;create_person()&lt;br&gt;get_person()&lt;br&gt;search_people()&lt;br&gt;add_relationship()&lt;br&gt;relationships()&lt;br&gt;relationships_for_people()" style="swimlane;fontStyle=0;childLayout=stackLayout;horizontal=1;startSize=30;rounded=0;html=1;fillColor=#ffffff;swimlaneFillColor=#f1f5f9;strokeColor=#334155;" vertex="1" parent="1">
+          <mxGeometry x="785" y="90" width="290" height="210" as="geometry" />
+        </mxCell>
+        <mxCell id="engine" value="&lt;b&gt;KinshipEngine&lt;/b&gt;&lt;hr&gt;relatedness_threshold_degree: int&lt;br&gt;marriage_minimum_degree: int&lt;hr&gt;verify_relationship()&lt;br&gt;assess_marriage()&lt;br&gt;_ancestor_distances()&lt;br&gt;_shared_ancestor_relationship()" style="swimlane;fontStyle=0;childLayout=stackLayout;horizontal=1;startSize=30;rounded=0;html=1;fillColor=#ffffff;swimlaneFillColor=#f1f5f9;strokeColor=#334155;" vertex="1" parent="1">
+          <mxGeometry x="785" y="405" width="320" height="240" as="geometry" />
+        </mxCell>
+        <mxCell id="verifyResponse" value="&lt;b&gt;KinshipVerifyResponse&lt;/b&gt;&lt;hr&gt;status: KinshipStatus&lt;br&gt;relationship: KinshipRelationship&lt;br&gt;degree: int?&lt;br&gt;common_ancestor_id: UUID?&lt;br&gt;path: list[RelationshipPathStep]&lt;br&gt;message: str" style="swimlane;fontStyle=0;childLayout=stackLayout;horizontal=1;startSize=30;rounded=0;html=1;fillColor=#ffffff;swimlaneFillColor=#f1f5f9;strokeColor=#334155;" vertex="1" parent="1">
+          <mxGeometry x="1215" y="90" width="335" height="230" as="geometry" />
+        </mxCell>
+        <mxCell id="marriageResponse" value="&lt;b&gt;MarriageEligibilityResponse&lt;/b&gt;&lt;hr&gt;can_marry: bool&lt;br&gt;decision: MarriageDecision&lt;br&gt;relationship: KinshipRelationship&lt;br&gt;degree: int?&lt;br&gt;common_ancestor_id: UUID?&lt;br&gt;path: list[RelationshipPathStep]&lt;br&gt;message: str" style="swimlane;fontStyle=0;childLayout=stackLayout;horizontal=1;startSize=30;rounded=0;html=1;fillColor=#ffffff;swimlaneFillColor=#f1f5f9;strokeColor=#334155;" vertex="1" parent="1">
+          <mxGeometry x="1215" y="430" width="350" height="250" as="geometry" />
+        </mxCell>
+        <mxCell id="c1" value="Clan 0..1 / Families 0..*" style="endArrow=none;html=1;rounded=0;strokeColor=#475569;" edge="1" parent="1" source="clan" target="family">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="c2" value="Clan 0..1 / Persons 0..*" style="endArrow=none;html=1;rounded=0;strokeColor=#475569;" edge="1" parent="1" source="clan" target="person">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="c3" value="Family 0..1 / Persons 0..*" style="endArrow=none;html=1;rounded=0;strokeColor=#475569;" edge="1" parent="1" source="family" target="person">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="c4" value="Person 1 / Edges 0..* (source or target)" style="endArrow=none;html=1;rounded=0;strokeColor=#475569;" edge="1" parent="1" source="person" target="edge">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="c5" value="User 0..1 / Recorded edges 0..*" style="endArrow=none;html=1;rounded=0;strokeColor=#475569;" edge="1" parent="1" source="user" target="edge">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="c6" value="manages" style="endArrow=open;dashed=1;html=1;" edge="1" parent="1" source="service" target="person">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="c7" value="manages" style="endArrow=open;dashed=1;html=1;" edge="1" parent="1" source="service" target="edge">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="c8" value="uses" style="endArrow=open;dashed=1;html=1;" edge="1" parent="1" source="engine" target="service">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="c9" value="creates" style="endArrow=open;dashed=1;html=1;" edge="1" parent="1" source="engine" target="verifyResponse">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="c10" value="creates" style="endArrow=open;dashed=1;html=1;" edge="1" parent="1" source="engine" target="marriageResponse">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
