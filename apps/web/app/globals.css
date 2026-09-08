@@ -127,6 +127,7 @@ button {
   gap: 8px;
   min-height: 46px;
   transition: 0.15s;
+  white-space: nowrap;
 }
 .btnp:hover {
   filter: brightness(1.06);

@@ -47,7 +47,7 @@ export function VerificationForm({
         onClick={() => personA && personB && onVerify(personA.id, personB.id)}
       >
         <Play size={18} />
-        {busy ? "CheckingÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¦" : "Run check"}
+        {busy ? "Checking..." : "Run check"}
       </button>
       <button
         className="btng full"
