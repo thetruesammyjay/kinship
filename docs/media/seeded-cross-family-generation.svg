@@ -1,0 +1,53 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 700" role="img" aria-labelledby="title description">
+  <title id="title">Seeded cross-family generation</title>
+  <desc id="description">Onyeka Eze from Worlu Lineage and Chidimma Nwachukwu from Nwosu Lineage are linked as spouses. Their two children belong to Nwosu Lineage and each has a child-of record for both parents.</desc>
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto" markerUnits="strokeWidth">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#a52646" />
+    </marker>
+    <filter id="shadow" x="-10%" y="-10%" width="120%" height="130%">
+      <feDropShadow dx="0" dy="5" stdDeviation="8" flood-color="#251216" flood-opacity="0.08" />
+    </filter>
+  </defs>
+  <rect width="1200" height="700" rx="24" fill="#faf5f7" />
+  <text x="600" y="52" fill="#251216" font-family="Inter, Arial, sans-serif" font-size="28" font-weight="800" text-anchor="middle">Seeded cross-family generation</text>
+  <text x="600" y="83" fill="#74656b" font-family="Inter, Arial, sans-serif" font-size="16" text-anchor="middle">Synthetic demonstration records added by the latest Alembic seed</text>
+
+  <g filter="url(#shadow)">
+    <rect x="90" y="125" width="450" height="150" rx="18" fill="#ffffff" stroke="#ff3358" stroke-width="3" />
+    <rect x="660" y="125" width="450" height="150" rx="18" fill="#fbfdff" stroke="#7894a4" stroke-width="3" />
+    <rect x="120" y="150" width="190" height="30" rx="15" fill="#fff0f3" />
+    <rect x="690" y="150" width="190" height="30" rx="15" fill="#eaf2f6" />
+    <text x="215" y="171" fill="#b81540" font-family="Inter, Arial, sans-serif" font-size="13" font-weight="800" text-anchor="middle">RIVERS · WORLU LINEAGE</text>
+    <text x="785" y="171" fill="#356d8b" font-family="Inter, Arial, sans-serif" font-size="13" font-weight="800" text-anchor="middle">IMO · NWOSU LINEAGE</text>
+    <text x="120" y="220" fill="#251216" font-family="Inter, Arial, sans-serif" font-size="23" font-weight="800">Onyeka Eze</text>
+    <text x="120" y="248" fill="#74656b" font-family="Inter, Arial, sans-serif" font-size="14">Existing person · seed ID 133</text>
+    <text x="690" y="220" fill="#251216" font-family="Inter, Arial, sans-serif" font-size="23" font-weight="800">Chidimma Nwachukwu</text>
+    <text x="690" y="248" fill="#74656b" font-family="Inter, Arial, sans-serif" font-size="14">Existing person · seed ID 166</text>
+  </g>
+
+  <path d="M 540 200 H 660" fill="none" stroke="#946313" stroke-width="4" stroke-dasharray="10 8" />
+  <rect x="550" y="164" width="100" height="28" rx="14" fill="#fff5dc" />
+  <text x="600" y="183" fill="#80540d" font-family="Inter, Arial, sans-serif" font-size="13" font-weight="800" text-anchor="middle">MARRIED_TO</text>
+
+  <path d="M 600 200 V 352 M 315 352 H 885" fill="none" stroke="#a52646" stroke-width="3" />
+  <path d="M 315 352 V 440" fill="none" stroke="#a52646" stroke-width="3" marker-end="url(#arrow)" />
+  <path d="M 885 352 V 440" fill="none" stroke="#a52646" stroke-width="3" marker-end="url(#arrow)" />
+  <rect x="472" y="299" width="256" height="31" rx="15" fill="#faf5f7" />
+  <text x="600" y="320" fill="#493a40" font-family="Inter, Arial, sans-serif" font-size="14" font-weight="700" text-anchor="middle">Both recorded parents connect to each child</text>
+
+  <g filter="url(#shadow)">
+    <rect x="120" y="450" width="390" height="132" rx="18" fill="#ffffff" stroke="#c57a12" stroke-width="3" />
+    <rect x="690" y="450" width="390" height="132" rx="18" fill="#ffffff" stroke="#c57a12" stroke-width="3" />
+    <rect x="145" y="470" width="190" height="28" rx="14" fill="#fff5dc" />
+    <rect x="715" y="470" width="190" height="28" rx="14" fill="#fff5dc" />
+    <text x="240" y="489" fill="#80540d" font-family="Inter, Arial, sans-serif" font-size="12" font-weight="800" text-anchor="middle">IMO · NWOSU LINEAGE</text>
+    <text x="810" y="489" fill="#80540d" font-family="Inter, Arial, sans-serif" font-size="12" font-weight="800" text-anchor="middle">IMO · NWOSU LINEAGE</text>
+    <text x="145" y="535" fill="#251216" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="800">Ifunanya Eze</text>
+    <text x="145" y="560" fill="#74656b" font-family="Inter, Arial, sans-serif" font-size="13">New person · seed ID 501</text>
+    <text x="715" y="535" fill="#251216" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="800">Chibuzor Eze</text>
+    <text x="715" y="560" fill="#74656b" font-family="Inter, Arial, sans-serif" font-size="13">New person · seed ID 502</text>
+  </g>
+
+  <text x="600" y="630" fill="#493a40" font-family="Inter, Arial, sans-serif" font-size="14" text-anchor="middle">Each child has two stored CHILD_OF edges, one for each parent. Arrows show parent-to-child meaning.</text>
+</svg>

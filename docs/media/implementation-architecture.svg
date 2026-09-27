@@ -1,0 +1,57 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 620" role="img" aria-labelledby="title description">
+  <title id="title">Kinship implementation architecture</title>
+  <desc id="description">The Next.js web client sends JSON requests to the FastAPI API. API services use asynchronous SQLAlchemy to read and write PostgreSQL. Graph traversal runs in API code. Alembic manages schema migrations.</desc>
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto" markerUnits="strokeWidth">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#493a40" />
+    </marker>
+    <filter id="shadow" x="-10%" y="-10%" width="120%" height="130%">
+      <feDropShadow dx="0" dy="5" stdDeviation="8" flood-color="#251216" flood-opacity="0.08" />
+    </filter>
+  </defs>
+  <rect width="1200" height="620" rx="24" fill="#faf5f7" />
+  <text x="600" y="54" fill="#251216" font-family="Inter, Arial, sans-serif" font-size="28" font-weight="800" text-anchor="middle">Kinship implementation architecture</text>
+
+  <g filter="url(#shadow)">
+    <rect x="55" y="135" width="315" height="280" rx="18" fill="#ffffff" stroke="#ff3358" stroke-width="3" />
+    <rect x="442" y="115" width="316" height="320" rx="18" fill="#ffffff" stroke="#493a40" stroke-width="3" />
+    <rect x="830" y="135" width="315" height="280" rx="18" fill="#ffffff" stroke="#7894a4" stroke-width="3" />
+  </g>
+
+  <text x="212" y="176" fill="#251216" font-family="Inter, Arial, sans-serif" font-size="22" font-weight="800" text-anchor="middle">Next.js web client</text>
+  <text x="212" y="205" fill="#74656b" font-family="Inter, Arial, sans-serif" font-size="14" text-anchor="middle">Next.js 15 · React 19 · TypeScript</text>
+  <text x="88" y="250" fill="#493a40" font-family="Inter, Arial, sans-serif" font-size="15">• Registry and account pages</text>
+  <text x="88" y="282" fill="#493a40" font-family="Inter, Arial, sans-serif" font-size="15">• Interactive family tree</text>
+  <text x="88" y="314" fill="#493a40" font-family="Inter, Arial, sans-serif" font-size="15">• Kinship and marriage checks</text>
+  <text x="88" y="346" fill="#493a40" font-family="Inter, Arial, sans-serif" font-size="15">• Evaluation and admin pages</text>
+  <text x="88" y="388" fill="#b81540" font-family="Inter, Arial, sans-serif" font-size="13" font-weight="700">React Flow and Dagre draw the tree</text>
+
+  <text x="600" y="157" fill="#251216" font-family="Inter, Arial, sans-serif" font-size="22" font-weight="800" text-anchor="middle">FastAPI REST API</text>
+  <text x="600" y="185" fill="#74656b" font-family="Inter, Arial, sans-serif" font-size="14" text-anchor="middle">Pydantic schemas · async SQLAlchemy</text>
+  <rect x="476" y="210" width="248" height="38" rx="10" fill="#fff5f7" />
+  <text x="600" y="235" fill="#493a40" font-family="Inter, Arial, sans-serif" font-size="14" font-weight="700" text-anchor="middle">Registry and family-tree services</text>
+  <rect x="476" y="260" width="248" height="38" rx="10" fill="#fff5f7" />
+  <text x="600" y="285" fill="#493a40" font-family="Inter, Arial, sans-serif" font-size="14" font-weight="700" text-anchor="middle">Kinship and eligibility engine</text>
+  <rect x="476" y="310" width="248" height="38" rx="10" fill="#fff5f7" />
+  <text x="600" y="335" fill="#493a40" font-family="Inter, Arial, sans-serif" font-size="14" font-weight="700" text-anchor="middle">Evaluation and governance services</text>
+  <text x="600" y="382" fill="#74656b" font-family="Inter, Arial, sans-serif" font-size="13" text-anchor="middle">JWT and role checks apply to protected routes</text>
+
+  <text x="987" y="176" fill="#251216" font-family="Inter, Arial, sans-serif" font-size="22" font-weight="800" text-anchor="middle">PostgreSQL</text>
+  <text x="987" y="205" fill="#74656b" font-family="Inter, Arial, sans-serif" font-size="14" text-anchor="middle">Relational records and graph edges</text>
+  <text x="863" y="250" fill="#493a40" font-family="Inter, Arial, sans-serif" font-size="15">• Persons, families, and clans</text>
+  <text x="863" y="282" fill="#493a40" font-family="Inter, Arial, sans-serif" font-size="15">• Kinship edges</text>
+  <text x="863" y="314" fill="#493a40" font-family="Inter, Arial, sans-serif" font-size="15">• Users, disputes, and audit logs</text>
+  <text x="863" y="346" fill="#493a40" font-family="Inter, Arial, sans-serif" font-size="15">• Evaluation metrics</text>
+  <text x="987" y="388" fill="#356d8b" font-family="Inter, Arial, sans-serif" font-size="13" font-weight="700" text-anchor="middle">Alembic applies schema and seed revisions</text>
+
+  <path d="M 370 257 H 442" fill="none" stroke="#493a40" stroke-width="3" marker-end="url(#arrow)" />
+  <rect x="370" y="219" width="72" height="27" rx="13" fill="#faf5f7" />
+  <text x="406" y="237" fill="#493a40" font-family="Inter, Arial, sans-serif" font-size="12" font-weight="700" text-anchor="middle">JSON</text>
+  <path d="M 758 257 H 830" fill="none" stroke="#493a40" stroke-width="3" marker-end="url(#arrow)" />
+  <rect x="759" y="219" width="71" height="27" rx="13" fill="#faf5f7" />
+  <text x="794" y="237" fill="#493a40" font-family="Inter, Arial, sans-serif" font-size="12" font-weight="700" text-anchor="middle">SQL</text>
+
+  <rect x="115" y="480" width="970" height="82" rx="16" fill="#fff5dc" stroke="#e4c56c" stroke-width="1.5" />
+  <text x="600" y="514" fill="#493a40" font-family="Inter, Arial, sans-serif" font-size="15" font-weight="700" text-anchor="middle">The API traverses stored relationship edges in application code.</text>
+  <text x="600" y="540" fill="#74656b" font-family="Inter, Arial, sans-serif" font-size="14" text-anchor="middle">The system uses PostgreSQL tables. It does not require a separate graph database.</text>
+</svg>
