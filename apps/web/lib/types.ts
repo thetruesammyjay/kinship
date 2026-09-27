@@ -47,6 +47,7 @@ export type KinshipStatus = "Unrelated" | "Distantly Related" | "Closely Related
 export type RelationshipPathStep = {
   person_id: string;
   full_name: string;
+  relationship_to_next: string | null;
 };
 
 export type KinshipVerifyResponse = {
@@ -62,6 +63,9 @@ export type FamilyTreeNode = {
   id: string;
   label: string;
   kind?: string;
+  family_id: string | null;
+  family_name: string | null;
+  is_focus_family: boolean;
 };
 
 export type FamilyTreeEdge = {

@@ -540,19 +540,24 @@ button {
 }
 .path-strip {
   display: grid;
-  gap: 8px;
+  gap: 0;
 }
-.path-strip span {
+.path-segment {
+  display: grid;
+  justify-items: start;
+}
+.path-person {
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 10px 12px;
+  min-width: min(100%, 320px);
+  padding: 8px 12px;
   border-radius: 12px;
   background: var(--color-paper2);
   font-size: 14px;
   font-weight: 700;
 }
-.path-strip b {
+.path-person b {
   display: grid;
   place-items: center;
   width: 26px;
@@ -562,6 +567,40 @@ button {
   background: var(--color-pink);
   color: #fff;
   font-size: 11px;
+}
+.path-person strong {
+  color: var(--color-ink);
+  line-height: 1.35;
+}
+.path-connector {
+  display: grid;
+  grid-template-columns: 26px auto 16px;
+  align-items: center;
+  gap: 8px;
+  min-height: 32px;
+  padding-left: 12px;
+  color: var(--color-muted);
+}
+.path-connector > span {
+  width: 2px;
+  height: 20px;
+  justify-self: center;
+  background: var(--color-blush);
+}
+.path-connector small {
+  font-size: 11px;
+  font-weight: 700;
+}
+.path-connector svg {
+  color: var(--color-pink);
+}
+.path-empty {
+  margin: 0;
+  padding: 14px;
+  border-radius: 12px;
+  background: var(--color-paper2);
+  color: var(--color-muted);
+  font-size: 13px;
 }
 .swap-button {
   justify-self: center;
@@ -603,7 +642,7 @@ button {
 }
 .graph-shell .react-flow__node-person {
   width: 184px;
-  height: 72px;
+  height: 82px;
 }
 .graph-person {
   display: grid;
@@ -611,7 +650,7 @@ button {
   align-items: center;
   gap: 10px;
   width: 184px;
-  height: 72px;
+  height: 82px;
   padding: 11px 13px;
   border: 1.5px solid var(--color-line);
   border-radius: 8px;
@@ -623,6 +662,16 @@ button {
 .graph-person.selected {
   border-color: var(--color-pink);
   box-shadow: 0 7px 20px rgba(216, 30, 74, 0.18);
+}
+.graph-person.external-family {
+  border-color: #7894a4;
+  border-left-width: 4px;
+  background: #fbfdff;
+}
+.graph-person.external-family.selected,
+.graph-person.external-family:hover {
+  border-color: #356d8b;
+  box-shadow: 0 7px 20px rgba(53, 109, 139, 0.2);
 }
 .graph-person-icon {
   display: grid;
@@ -647,9 +696,12 @@ button {
   white-space: nowrap;
 }
 .graph-person-copy small {
+  overflow: hidden;
   color: var(--color-muted);
   font-size: 10px;
   font-weight: 700;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 .graph-person .react-flow__handle {
   width: 8px;
@@ -685,8 +737,10 @@ button {
 }
 .graph-legend {
   display: flex;
-  gap: 12px;
-  padding: 8px 10px;
+  max-width: min(420px, calc(100vw - 32px));
+  flex-wrap: wrap;
+  gap: 8px 12px;
+  padding: 9px 11px;
 }
 .graph-legend span {
   display: flex;
@@ -704,6 +758,27 @@ button {
 .graph-legend i.spouse-line {
   border-color: var(--color-amber);
   border-top-style: dashed;
+}
+.graph-legend i.sibling-line {
+  border-color: #356d8b;
+  border-top-style: dotted;
+}
+.graph-legend i.other-line {
+  border-color: #68636d;
+  border-top-style: dashed;
+}
+.graph-legend i.external-family {
+  width: 12px;
+  height: 12px;
+  border: 2px solid #7894a4;
+  border-left-width: 4px;
+  border-radius: 3px;
+}
+.graph-legend small {
+  flex-basis: 100%;
+  color: var(--color-muted);
+  font-size: 10px;
+  line-height: 1.35;
 }
 .graph-detail {
   position: relative;
@@ -1097,7 +1172,7 @@ button {
    ============================================================ */
 .landing-shell {
   min-height: 100dvh;
-  overflow-x: hidden;
+  overflow-x: clip;
   background: #fff;
 }
 .landing-nav {
@@ -1383,6 +1458,18 @@ button {
 }
 .proof-section {
   background: #faf5f7;
+  scroll-margin-top: 90px;
+}
+.proof-mascot-wrap {
+  display: grid;
+  place-items: center;
+  width: min(100%, 340px);
+  margin: 28px auto 0;
+}
+.proof-mascot {
+  display: block;
+  width: 100%;
+  height: auto;
 }
 .desktop-feature-grid {
   display: none;
@@ -1427,7 +1514,7 @@ button {
   .landing-nav {
     height: 78px;
     padding: 0 108px;
-    border-bottom: 0;
+    border-bottom: 1px solid var(--color-line);
   }
   .landing-hero {
     grid-template-columns: 0.9fr 1.1fr;
@@ -1491,6 +1578,15 @@ button {
   }
   .proof-section .landing-card-stack {
     margin-top: 0;
+  }
+  .proof-section .proof-mascot-wrap {
+    grid-column: 2;
+    grid-row: 2;
+    width: 100%;
+    margin: 0;
+  }
+  .proof-section .proof-mascot {
+    width: min(100%, 460px);
   }
   .desktop-feature-grid {
     display: grid;

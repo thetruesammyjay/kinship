@@ -3,7 +3,6 @@ from uuid import UUID
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.exceptions import ApiError
 from app.schemas.kinship import (
     KinshipRelationship,
     KinshipStatus,
@@ -12,7 +11,7 @@ from app.schemas.kinship import (
     MarriageEligibilityResponse,
     RelationshipPathStep,
 )
-from app.schemas.person import RelationshipType
+from app.schemas.person import RelationshipRead, RelationshipType
 from app.services.person_service import PersonService
 
 
@@ -33,48 +32,67 @@ class KinshipEngine:
         person_a_id: UUID,
         person_b_id: UUID,
     ) -> KinshipVerifyResponse:
+        person_a = await self.person_service.get_person(session, person_a_id)
+        person_b = await self.person_service.get_person(session, person_b_id)
+
         if person_a_id == person_b_id:
-            person = await self.person_service.get_person(session, person_a_id)
             return KinshipVerifyResponse(
                 status=KinshipStatus.closely_related,
                 relationship=KinshipRelationship.same_person,
                 degree=0,
-                common_ancestor_id=person.id,
-                path=[RelationshipPathStep(person_id=person.id, full_name=person.full_name)],
-                message="The selected records refer to the same person.",
+                common_ancestor_id=person_a.id,
+                path=[RelationshipPathStep(person_id=person_a.id, full_name=person_a.full_name)],
+                message=f"{person_a.full_name} is the same person in both selected records.",
             )
 
-        await self.person_service.get_person(session, person_a_id)
-        await self.person_service.get_person(session, person_b_id)
+        relationships = await self.person_service.relationships(session)
+        parent_map = self._parent_map(relationships)
 
         explicit_relationship = await self._explicit_pair_relationship(
-            session, person_a_id, person_b_id
+            session,
+            person_a_id,
+            person_b_id,
+            relationships,
+            parent_map,
+            person_a.full_name,
+            person_b.full_name,
         )
         if explicit_relationship is not None:
             return explicit_relationship
 
-        parent_map = await self._parent_map(session)
-        ancestors_a = self._ancestor_distances(person_a_id, parent_map)
-        ancestors_b = self._ancestor_distances(person_b_id, parent_map)
+        ancestors_a = self._ancestor_paths(person_a_id, parent_map)
+        ancestors_b = self._ancestor_paths(person_b_id, parent_map)
 
-        direct_ancestor_distance = ancestors_a.get(person_b_id)
-        if direct_ancestor_distance is None:
-            direct_ancestor_distance = ancestors_b.get(person_a_id)
+        if person_b_id in ancestors_a:
+            ancestor_id = person_b_id
+            descendant_id = person_a_id
+            path_ids = ancestors_a[person_b_id]
+            direct_ancestor_distance = len(path_ids) - 1
+        elif person_a_id in ancestors_b:
+            ancestor_id = person_a_id
+            descendant_id = person_b_id
+            path_ids = list(reversed(ancestors_b[person_a_id]))
+            direct_ancestor_distance = len(path_ids) - 1
+        else:
+            ancestor_id = None
+            descendant_id = None
+            path_ids = []
+            direct_ancestor_distance = None
+
         if direct_ancestor_distance is not None:
             relationship = self._direct_ancestor_relationship(direct_ancestor_distance)
-            status = self._status_for_degree(direct_ancestor_distance)
-            common_ancestor_id = (
-                person_b_id if person_b_id in ancestors_a else person_a_id
-            )
+            ancestor = person_a if ancestor_id == person_a_id else person_b
+            descendant = person_a if descendant_id == person_a_id else person_b
             return KinshipVerifyResponse(
-                status=status,
+                status=self._status_for_degree(direct_ancestor_distance),
                 relationship=relationship,
                 degree=direct_ancestor_distance,
-                common_ancestor_id=common_ancestor_id,
-                path=await self._path_steps(session, [person_a_id, person_b_id]),
+                common_ancestor_id=ancestor.id,
+                path=await self._path_steps(session, path_ids, parent_map),
                 message=(
-                    f"A direct ancestor path was found: {relationship.value}. "
-                    f"Computed lineage distance: {direct_ancestor_distance}."
+                    f"The recorded lineage places {ancestor.full_name} "
+                    f"{self._link_count(direct_ancestor_distance)} above "
+                    f"{descendant.full_name}. The relationship is {relationship.value}."
                 ),
             )
 
@@ -87,27 +105,48 @@ class KinshipEngine:
                 degree=None,
                 common_ancestor_id=None,
                 path=[],
-                message="No shared ancestor was found within the recorded lineage graph.",
+                message=(
+                    f"No shared ancestor was found in the recorded lineage for "
+                    f"{person_a.full_name} and {person_b.full_name}. This does not prove "
+                    "that no relationship exists; some lineage may be missing."
+                ),
             )
 
         common_ancestor_id = min(
             shared_ancestors,
-            key=lambda ancestor_id: ancestors_a[ancestor_id] + ancestors_b[ancestor_id],
+            key=lambda ancestor_id: (
+                len(ancestors_a[ancestor_id]) + len(ancestors_b[ancestor_id]),
+                str(ancestor_id),
+            ),
         )
-        path_length = ancestors_a[common_ancestor_id] + ancestors_b[common_ancestor_id]
+        path_a = ancestors_a[common_ancestor_id]
+        path_b = ancestors_b[common_ancestor_id]
+        distance_a = len(path_a) - 1
+        distance_b = len(path_b) - 1
+        path_ids = path_a + list(reversed(path_b[:-1]))
+        path_length = distance_a + distance_b
         degree = max(1, path_length - 1)
         relationship = self._shared_ancestor_relationship(
-            ancestors_a[common_ancestor_id], ancestors_b[common_ancestor_id]
+            distance_a, distance_b
         )
         status = self._status_for_degree(degree)
+        common_ancestor = await self.person_service.get_person(session, common_ancestor_id)
 
         return KinshipVerifyResponse(
             status=status,
             relationship=relationship,
             degree=degree,
             common_ancestor_id=common_ancestor_id,
-            path=await self._path_steps(session, [person_a_id, common_ancestor_id, person_b_id]),
-            message=f"Shared ancestor found. The records are {relationship.value.lower()}.",
+            path=await self._path_steps(session, path_ids, parent_map),
+            message=(
+                f"{person_a.full_name} and {person_b.full_name} share "
+                f"{common_ancestor.full_name} as a recorded ancestor. "
+                f"{person_a.full_name} is {self._link_count(distance_a)} from "
+                f"{common_ancestor.full_name}; {person_b.full_name} is "
+                f"{self._link_count(distance_b)} from {common_ancestor.full_name}. "
+                f"The recorded relationship is {relationship.value.lower()} "
+                f"(degree {degree})."
+            ),
         )
 
     async def assess_marriage(
@@ -132,19 +171,34 @@ class KinshipEngine:
             and (result.degree is None or result.degree >= self.marriage_minimum_degree)
         )
         if result.relationship == KinshipRelationship.spouses:
-            message = "These records are already marked as spouses."
-        elif result.relationship in blocked_relationships:
             message = (
-                f"Marriage is not permitted for the recorded relationship: "
-                f"{result.relationship.value}."
+                f"{result.message} This check does not assess a new marriage."
             )
         elif result.degree is None:
-            message = "No shared ancestor was found in the recorded lineage graph."
+            message = (
+                f"{result.message} Under the current rule, a pair with no shared ancestor "
+                "passes the minimum-degree check. This result depends on recorded lineage."
+            )
+        elif result.relationship in blocked_relationships:
+            threshold_note = (
+                f" The degree is also below the configured minimum of "
+                f"{self.marriage_minimum_degree}."
+                if result.degree < self.marriage_minimum_degree
+                else ""
+            )
+            message = (
+                f"{result.message} The configured rule blocks "
+                f"{result.relationship.value.lower()} relationships.{threshold_note}"
+            )
+        elif not is_allowed:
+            message = (
+                f"{result.message} Degree {result.degree} is below the configured minimum "
+                f"of {self.marriage_minimum_degree}."
+            )
         else:
             message = (
-                f"The relationship is {result.relationship.value}. "
-                f"The computed degree meets the minimum allowed degree of "
-                f"{self.marriage_minimum_degree}."
+                f"{result.message} Degree {result.degree} meets the configured minimum "
+                f"of {self.marriage_minimum_degree}."
             )
         return MarriageEligibilityResponse(
             can_marry=is_allowed,
@@ -157,6 +211,7 @@ class KinshipEngine:
             path=result.path,
             message=message,
         )
+
     def _status_for_degree(self, degree: int) -> KinshipStatus:
         return (
             KinshipStatus.closely_related
@@ -192,12 +247,16 @@ class KinshipEngine:
         session: AsyncSession,
         person_a_id: UUID,
         person_b_id: UUID,
+        relationships: list[RelationshipRead],
+        parent_map: dict[UUID, set[UUID]],
+        person_a_name: str,
+        person_b_name: str,
     ) -> KinshipVerifyResponse | None:
         pair = {
             (person_a_id, person_b_id),
             (person_b_id, person_a_id),
         }
-        for relationship in await self.person_service.relationships(session):
+        for relationship in relationships:
             if (relationship.source_person_id, relationship.target_person_id) not in pair:
                 continue
             if relationship.relationship_type.value == "MARRIED_TO":
@@ -206,10 +265,12 @@ class KinshipEngine:
                     relationship=KinshipRelationship.spouses,
                     degree=None,
                     common_ancestor_id=None,
-                    path=await self._path_steps(session, [person_a_id, person_b_id]),
+                    path=await self._path_steps(
+                        session, [person_a_id, person_b_id], parent_map, "Spouse"
+                    ),
                     message=(
-                        "The records are marked as spouses; "
-                        "no blood relationship was inferred."
+                        f"The records mark {person_a_name} and {person_b_name} as spouses. "
+                        "A spouse link does not establish a blood relationship."
                     ),
                 )
             if relationship.relationship_type.value == "SIBLING_OF":
@@ -218,14 +279,18 @@ class KinshipEngine:
                     relationship=KinshipRelationship.siblings,
                     degree=1,
                     common_ancestor_id=None,
-                    path=await self._path_steps(session, [person_a_id, person_b_id]),
-                    message="The records are explicitly marked as siblings.",
+                    path=await self._path_steps(
+                        session, [person_a_id, person_b_id], parent_map, "Sibling"
+                    ),
+                    message="The records explicitly mark these people as siblings (degree 1).",
                 )
         return None
 
-    async def _parent_map(self, session: AsyncSession) -> dict[UUID, set[UUID]]:
+    def _parent_map(
+        self, relationships: list[RelationshipRead]
+    ) -> dict[UUID, set[UUID]]:
         parent_map: dict[UUID, set[UUID]] = {}
-        for relationship in await self.person_service.relationships(session):
+        for relationship in relationships:
             if relationship.relationship_type == RelationshipType.child_of:
                 parent_map.setdefault(relationship.source_person_id, set()).add(
                     relationship.target_person_id
@@ -236,37 +301,60 @@ class KinshipEngine:
                 )
         return parent_map
 
-    def _ancestor_distances(
+    def _ancestor_paths(
         self,
         person_id: UUID,
         parent_map: dict[UUID, set[UUID]],
-    ) -> dict[UUID, int]:
-        distances: dict[UUID, int] = {}
-        queue: deque[tuple[UUID, int]] = deque([(person_id, 0)])
+    ) -> dict[UUID, list[UUID]]:
+        paths: dict[UUID, list[UUID]] = {person_id: [person_id]}
+        queue: deque[UUID] = deque([person_id])
 
         while queue:
-            current_id, distance = queue.popleft()
-            for parent_id in parent_map.get(current_id, set()):
-                if parent_id not in distances:
-                    distances[parent_id] = distance + 1
-                    queue.append((parent_id, distance + 1))
+            current_id = queue.popleft()
+            for parent_id in sorted(parent_map.get(current_id, set()), key=str):
+                if parent_id not in paths:
+                    paths[parent_id] = [*paths[current_id], parent_id]
+                    queue.append(parent_id)
 
-        return distances
+        return paths
+
+    def _link_count(self, distance: int) -> str:
+        noun = "parent link" if distance == 1 else "parent links"
+        return f"{distance} {noun}"
 
     async def _path_steps(
         self,
         session: AsyncSession,
         person_ids: list[UUID],
+        parent_map: dict[UUID, set[UUID]],
+        explicit_relationship: str | None = None,
     ) -> list[RelationshipPathStep]:
+        people = await self.person_service.get_people_by_ids(
+            session, {str(person_id) for person_id in person_ids}
+        )
+        people_by_id = {person.id: person for person in people}
         steps: list[RelationshipPathStep] = []
-        seen: set[UUID] = set()
-        for person_id in person_ids:
-            if person_id in seen:
+
+        for index, person_id in enumerate(person_ids):
+            person = people_by_id.get(person_id)
+            if person is None:
                 continue
-            seen.add(person_id)
-            try:
-                person = await self.person_service.get_person(session, person_id)
-            except ApiError:
-                continue
-            steps.append(RelationshipPathStep(person_id=person.id, full_name=person.full_name))
+            relation_to_next = None
+            if index < len(person_ids) - 1:
+                next_id = person_ids[index + 1]
+                if explicit_relationship is not None:
+                    relation_to_next = explicit_relationship
+                elif next_id in parent_map.get(person_id, set()):
+                    relation_to_next = "Parent"
+                elif person_id in parent_map.get(next_id, set()):
+                    relation_to_next = "Child"
+                else:
+                    relation_to_next = "Related person"
+            steps.append(
+                RelationshipPathStep(
+                    person_id=person.id,
+                    full_name=person.full_name,
+                    relationship_to_next=relation_to_next,
+                )
+            )
         return steps

@@ -25,6 +25,9 @@ class FamilyTreeNode(BaseModel):
     id: UUID
     label: str
     kind: str = "person"
+    family_id: UUID | None = None
+    family_name: str | None = None
+    is_focus_family: bool = False
 
 
 class FamilyTreeEdge(BaseModel):

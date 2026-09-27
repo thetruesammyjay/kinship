@@ -16,13 +16,20 @@ export function VerdictBanner({ result }: VerdictBannerProps) {
   }
 
   const isClose = result.status === "Closely Related";
+  const isSpouseRecord = result.relationship === "Spouses";
+  const detail =
+    result.degree != null
+      ? `Computed degree ${result.degree}`
+      : isSpouseRecord
+        ? "Spouse link recorded; no blood degree inferred"
+        : "No shared ancestor found in the recorded data";
   return (
     <section className={isClose ? "verdict-card risk" : "verdict-card"}>
       {isClose ? <ShieldAlert size={24} /> : <ShieldCheck size={24} />}
       <div>
-        <span>{result.status}</span>
+        <span>{isSpouseRecord ? "Spouse link recorded" : result.status}</span>
         <strong>{result.relationship}</strong>
-        <small>{result.degree != null ? `Computed degree ${result.degree}` : "No blood degree"}</small>
+        <small>{detail}</small>
       </div>
     </section>
   );

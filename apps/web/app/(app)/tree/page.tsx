@@ -5,7 +5,7 @@ import { FormEvent, useEffect, useState } from "react";
 import { FamilyTreeCanvas } from "@/components/family-tree/FamilyTreeCanvas";
 import { FamilySelect } from "@/components/ui/FamilySelect";
 import { apiRequest } from "@/lib/api";
-import { filterTreeByFamily, loadRegistryData, type RegistryData } from "@/lib/registry";
+import { loadRegistryData, type RegistryData } from "@/lib/registry";
 import type { FamilyTreeRead } from "@/lib/types";
 
 export default function FamilyTreePage() {
@@ -63,7 +63,7 @@ export default function FamilyTreePage() {
     setError(null);
     apiRequest<FamilyTreeRead>(`/families/${familyId}/tree`)
       .then((data) => {
-        if (!cancelled) setTree(filterTreeByFamily(data, registry.people, familyId));
+        if (!cancelled) setTree(data);
       })
       .catch(() => {
         if (!cancelled) setError("Could not load the selected family tree.");
@@ -87,6 +87,10 @@ export default function FamilyTreePage() {
           disabled={!registry}
           label="View family"
         />
+        <p className="muted-copy">
+          The selected family sets the focus. The tree also shows people connected through
+          recorded relationships in other families.
+        </p>
       </section>
       {error && <p className="form-error">{error}</p>}
       <FamilyTreeCanvas tree={tree} />

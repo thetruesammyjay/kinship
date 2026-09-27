@@ -1,5 +1,5 @@
 import { apiRequest } from "@/lib/api";
-import type { FamilyRead, FamilyTreeRead, PersonRead, PersonSearchResult } from "@/lib/types";
+import type { FamilyRead, PersonRead, PersonSearchResult } from "@/lib/types";
 
 export type FamilyOption = {
   id: string;
@@ -40,20 +40,3 @@ export async function loadRegistryData(): Promise<RegistryData> {
   return { people: result.items, families };
 }
 
-export function filterTreeByFamily(
-  tree: FamilyTreeRead,
-  people: PersonRead[],
-  familyId: string,
-): FamilyTreeRead {
-  const memberIds = new Set(
-    people.filter((person) => person.family_id === familyId).map((person) => person.id),
-  );
-
-  return {
-    family_id: familyId,
-    nodes: tree.nodes.filter((node) => memberIds.has(node.id)),
-    edges: tree.edges.filter(
-      (edge) => memberIds.has(edge.source) && memberIds.has(edge.target),
-    ),
-  };
-}

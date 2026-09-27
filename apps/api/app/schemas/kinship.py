@@ -38,6 +38,7 @@ class KinshipVerifyRequest(BaseModel):
 class RelationshipPathStep(BaseModel):
     person_id: UUID
     full_name: str
+    relationship_to_next: str | None = None
 
 
 class KinshipVerifyResponse(BaseModel):

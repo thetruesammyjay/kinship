@@ -89,11 +89,18 @@ export default function VerifyEligibilityPage() {
         <section className="panel">
           <div className="panel-heading">
             <span className="eyebrow">relationship path</span>
-            <h2>Explainable result</h2>
+            <h2>Recorded connection path</h2>
           </div>
-          <RelationshipPath path={result?.path ?? []} />
+          <RelationshipPath
+            path={marriageResult?.path ?? result?.path ?? []}
+            emptyMessage={
+              result || marriageResult
+                ? "No recorded connection path was found. Check the explanation below."
+                : "Choose two people and run a check to see their recorded path."
+            }
+          />
           <p className="muted-copy">
-            {result?.message ??
+            {marriageResult?.message ?? result?.message ??
               "The API returns the verdict, computed degree, common ancestor, and path so reviewers can audit the result."}
           </p>
         </section>

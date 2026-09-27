@@ -6,7 +6,7 @@ import { useEffect, useState } from "react";
 import { FamilyTreeCanvas } from "@/components/family-tree/FamilyTreeCanvas";
 import { FamilySelect } from "@/components/ui/FamilySelect";
 import { apiRequest } from "@/lib/api";
-import { filterTreeByFamily, loadRegistryData, type RegistryData } from "@/lib/registry";
+import { loadRegistryData, type RegistryData } from "@/lib/registry";
 import type { FamilyTreeRead } from "@/lib/types";
 
 export default function DashboardPage() {
@@ -42,7 +42,7 @@ export default function DashboardPage() {
     setError(null);
     apiRequest<FamilyTreeRead>(`/families/${familyId}/tree`)
       .then((data) => {
-        if (!cancelled) setTree(filterTreeByFamily(data, registry.people, familyId));
+        if (!cancelled) setTree(data);
       })
       .catch(() => {
         if (!cancelled) setError("Could not load this family tree.");

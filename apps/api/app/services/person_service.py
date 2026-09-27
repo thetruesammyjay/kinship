@@ -24,6 +24,20 @@ class PersonService:
             raise ApiError(status_code=404, message="Person not found")
         return self._to_person_read(person)
 
+    async def get_people_by_ids(
+        self,
+        session: AsyncSession,
+        person_ids: set[str],
+    ) -> list[PersonRead]:
+        if not person_ids:
+            return []
+        result = await session.scalars(
+            select(Person)
+            .where(Person.id.in_(person_ids))
+            .order_by(Person.full_name)
+        )
+        return [self._to_person_read(person) for person in result.all()]
+
     async def search_people(
         self,
         session: AsyncSession,

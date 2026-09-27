@@ -1,5 +1,6 @@
 import { ArrowRight, GitBranch, Network, ShieldCheck, UserPlus, UsersRound } from "lucide-react";
 import type { Metadata } from "next";
+import Image from "next/image";
 import Link from "next/link";
 
 export const metadata: Metadata = {
@@ -134,6 +135,17 @@ export default function LandingPage() {
               <p>{item.body}</p>
             </article>
           ))}
+        </div>
+        <div className="proof-mascot-wrap">
+          <Image
+            className="proof-mascot"
+            src="/Kinship-mascot.png"
+            alt="Kinship's pink lineage guide perched on a branch of connected nodes."
+            width={1152}
+            height={1173}
+            sizes="(min-width: 760px) 460px, 340px"
+            priority={false}
+          />
         </div>
       </section>
 
