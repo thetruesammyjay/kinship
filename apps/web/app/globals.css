@@ -427,6 +427,16 @@ button {
   font-size: 14px;
   line-height: 1.55;
 }
+.verification-source-note {
+  margin: 0 0 12px;
+  padding: 10px 12px;
+  border-left: 3px solid var(--color-pink);
+  border-radius: 0 8px 8px 0;
+  background: var(--color-paper2);
+  color: var(--color-muted);
+  font-size: 12px;
+  line-height: 1.45;
+}
 .two-column {
   display: grid;
   gap: 14px;
@@ -709,6 +719,13 @@ button {
   border: 2px solid #fff;
   background: var(--color-pink);
 }
+.graph-person .graph-spouse-handle {
+  width: 8px;
+  height: 8px;
+  border: 0;
+  background: #6d2d54;
+  opacity: 0;
+}
 .graph-shell .react-flow__controls {
   overflow: hidden;
   border: 1px solid var(--color-line);
@@ -756,7 +773,7 @@ button {
   border-top: 2px solid var(--color-pink-deep);
 }
 .graph-legend i.spouse-line {
-  border-color: var(--color-amber);
+  border-color: #6d2d54;
   border-top-style: dashed;
 }
 .graph-legend i.sibling-line {
@@ -787,6 +804,9 @@ button {
   display: grid;
   gap: 3px;
 }
+.graph-edge-detail {
+  width: min(300px, calc(100vw - 48px));
+}
 .graph-detail button {
   position: absolute;
   top: 7px;
@@ -812,6 +832,28 @@ button {
 .graph-detail strong {
   overflow-wrap: anywhere;
   font-size: 13px;
+}
+.graph-verify-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  width: fit-content;
+  margin-top: 7px;
+  padding: 7px 9px;
+  border-radius: 7px;
+  background: var(--color-pink);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 800;
+  text-decoration: none;
+}
+.graph-verify-link:hover {
+  background: var(--color-pink-deep);
+}
+.graph-verify-link:focus-visible {
+  outline: 3px solid #251216;
+  outline-offset: 2px;
 }
 
 @media (max-width: 640px) {

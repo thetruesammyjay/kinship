@@ -14,7 +14,8 @@ import {
   ReactFlow,
 } from "@xyflow/react";
 import { useEffect, useMemo, useState } from "react";
-import { X } from "lucide-react";
+import Link from "next/link";
+import { ArrowUpRight, X } from "lucide-react";
 import { PersonNode, type PersonGraphNode } from "./PersonNode";
 import type { FamilyTreeEdge, FamilyTreeRead } from "@/lib/types";
 
@@ -26,6 +27,7 @@ const NODE_WIDTH = 184;
 const NODE_HEIGHT = 82;
 const nodeTypes = { person: PersonNode };
 type RelationshipKind = "parent" | "spouse" | "sibling" | "other";
+type FamilyTreeGraphEdge = Edge<{ relationshipType: string }>;
 
 function relationshipPresentation(edge: FamilyTreeEdge): {
   source: string;
@@ -55,7 +57,7 @@ function relationshipPresentation(edge: FamilyTreeEdge): {
       return {
         source: edge.source,
         target: edge.target,
-        label: "Spouse",
+        label: "Spouse link",
         kind: "spouse",
         directed: false,
       };
@@ -78,7 +80,10 @@ function relationshipPresentation(edge: FamilyTreeEdge): {
   }
 }
 
-function buildGraph(tree: FamilyTreeRead): { nodes: PersonGraphNode[]; edges: Edge[] } {
+function buildGraph(tree: FamilyTreeRead): {
+  nodes: PersonGraphNode[];
+  edges: FamilyTreeGraphEdge[];
+} {
   const graph = new dagre.graphlib.Graph().setDefaultEdgeLabel(() => ({}));
   graph.setGraph({
     rankdir: "TB",
@@ -102,28 +107,53 @@ function buildGraph(tree: FamilyTreeRead): { nodes: PersonGraphNode[]; edges: Ed
     }
   }
 
+  dagre.layout(graph);
+
   const edges = tree.edges.map((edge, index) => {
     const display = relationshipPresentation(edge);
     const palette = {
       parent: { stroke: "#a52646", dash: undefined },
-      spouse: { stroke: "#946313", dash: "7 5" },
+      spouse: { stroke: "#6d2d54", dash: "8 5" },
       sibling: { stroke: "#356d8b", dash: "2 5" },
       other: { stroke: "#68636d", dash: "5 5" },
     }[display.kind];
     const id = `${edge.source}-${edge.target}-${edge.relationship_type}-${index}`;
+    const spouseEdge = display.kind === "spouse";
+    const sourcePosition = graph.node(display.source);
+    const targetPosition = graph.node(display.target);
+    const deltaX = targetPosition.x - sourcePosition.x;
+    const deltaY = targetPosition.y - sourcePosition.y;
+    const useHorizontalSpouseHandles = Math.abs(deltaX) >= Math.abs(deltaY);
+    const sourceHandle = useHorizontalSpouseHandles
+      ? deltaX >= 0
+        ? "spouse-source-right"
+        : "spouse-source-left"
+      : deltaY >= 0
+        ? "spouse-source-bottom"
+        : "spouse-source-top";
+    const targetHandle = useHorizontalSpouseHandles
+      ? deltaX >= 0
+        ? "spouse-target-left"
+        : "spouse-target-right"
+      : deltaY >= 0
+        ? "spouse-target-top"
+        : "spouse-target-bottom";
 
     return {
       id,
       source: display.source,
       target: display.target,
-      type: "step",
+      type: spouseEdge ? "smoothstep" : "step",
+      sourceHandle: spouseEdge ? sourceHandle : "relationship-source",
+      targetHandle: spouseEdge ? targetHandle : "relationship-target",
       label: display.label,
+      data: { relationshipType: edge.relationship_type },
       markerEnd: display.directed
         ? { type: MarkerType.ArrowClosed, width: 16, height: 16, color: palette.stroke }
         : undefined,
       style: {
         stroke: palette.stroke,
-        strokeWidth: 2.5,
+        strokeWidth: spouseEdge ? 3.2 : 2.5,
         strokeDasharray: palette.dash,
         strokeLinecap: "round",
       },
@@ -131,10 +161,8 @@ function buildGraph(tree: FamilyTreeRead): { nodes: PersonGraphNode[]; edges: Ed
       labelBgStyle: { fill: "#ffffff", fillOpacity: 1 },
       labelBgPadding: [7, 5] as [number, number],
       labelBgBorderRadius: 5,
-    } satisfies Edge;
+    } satisfies FamilyTreeGraphEdge;
   });
-
-  dagre.layout(graph);
 
   const nodes = tree.nodes.map((person) => {
     const position = graph.node(person.id) ?? { x: NODE_WIDTH / 2, y: NODE_HEIGHT / 2 };
@@ -160,9 +188,14 @@ function buildGraph(tree: FamilyTreeRead): { nodes: PersonGraphNode[]; edges: Ed
 
 export function FamilyTreeCanvas({ tree }: FamilyTreeCanvasProps) {
   const [selectedId, setSelectedId] = useState<string | null>(null);
-  useEffect(() => setSelectedId(null), [tree?.family_id]);
+  const [selectedEdgeId, setSelectedEdgeId] = useState<string | null>(null);
+  useEffect(() => {
+    setSelectedId(null);
+    setSelectedEdgeId(null);
+  }, [tree?.family_id]);
   const graph = useMemo(() => (tree ? buildGraph(tree) : null), [tree]);
   const selectedNode = graph?.nodes.find((node) => node.id === selectedId);
+  const selectedEdge = graph?.edges.find((edge) => edge.id === selectedEdgeId);
   const selectedRelationships = tree?.edges.filter(
     (edge) => edge.source === selectedId || edge.target === selectedId,
   );
@@ -171,6 +204,21 @@ export function FamilyTreeCanvas({ tree }: FamilyTreeCanvasProps) {
     selectedNeighborIds.add(edge.source);
     selectedNeighborIds.add(edge.target);
   }
+  const selectedEdgeNeighbors = new Set(
+    selectedEdge ? [selectedEdge.source, selectedEdge.target] : [],
+  );
+  const selectedEdgePeople = selectedEdge
+    ? [
+        tree?.nodes.find((person) => person.id === selectedEdge.source),
+        tree?.nodes.find((person) => person.id === selectedEdge.target),
+      ]
+    : [];
+  const verifyHref = selectedEdge
+    ? `/verify?${new URLSearchParams({
+        person_a_id: selectedEdge.source,
+        person_b_id: selectedEdge.target,
+      }).toString()}`
+    : null;
 
   if (!tree || tree.nodes.length === 0 || !graph) {
     return (
@@ -187,24 +235,39 @@ export function FamilyTreeCanvas({ tree }: FamilyTreeCanvasProps) {
         key={tree.family_id}
         nodes={graph.nodes.map((node) => ({
           ...node,
+          selected: selectedEdge
+            ? selectedEdgeNeighbors.has(node.id)
+            : node.id === selectedId,
           style: {
             ...node.style,
-            opacity: !selectedId || selectedNeighborIds.has(node.id) ? 1 : 0.24,
+            opacity: selectedEdge
+              ? selectedEdgeNeighbors.has(node.id)
+                ? 1
+                : 0.2
+              : !selectedId || selectedNeighborIds.has(node.id)
+                ? 1
+                : 0.24,
           },
         }))}
         edges={graph.edges.map((edge) => {
           const isSelectedConnection =
-            edge.source === selectedId || edge.target === selectedId;
+            selectedEdge != null && edge.id === selectedEdge.id;
+          const isHighlightedConnection = selectedEdge
+            ? isSelectedConnection
+            : Boolean(selectedId) &&
+              (edge.source === selectedId || edge.target === selectedId);
+          const hasSelection = Boolean(selectedEdge || selectedId);
           return {
             ...edge,
+            label: isSelectedConnection ? edge.label : undefined,
             labelStyle: {
               ...edge.labelStyle,
-              opacity: !selectedId || isSelectedConnection ? 1 : 0.12,
+              opacity: isSelectedConnection ? 1 : 0,
             },
             style: {
               ...edge.style,
-              opacity: !selectedId || isSelectedConnection ? 1 : 0.12,
-              strokeWidth: isSelectedConnection ? 3.5 : 2.5,
+              opacity: !hasSelection || isHighlightedConnection ? 1 : 0.12,
+              strokeWidth: isHighlightedConnection ? 4.2 : edge.style?.strokeWidth,
             },
           };
         })}
@@ -216,8 +279,18 @@ export function FamilyTreeCanvas({ tree }: FamilyTreeCanvasProps) {
         nodesDraggable={false}
         nodesConnectable={false}
         elementsSelectable
-        onNodeClick={(_, node) => setSelectedId(node.id)}
-        onPaneClick={() => setSelectedId(null)}
+        onNodeClick={(_, node) => {
+          setSelectedEdgeId(null);
+          setSelectedId(node.id);
+        }}
+        onEdgeClick={(_, edge) => {
+          setSelectedId(null);
+          setSelectedEdgeId(edge.id);
+        }}
+        onPaneClick={() => {
+          setSelectedId(null);
+          setSelectedEdgeId(null);
+        }}
       >
         <Background variant={BackgroundVariant.Dots} gap={22} size={1.2} color="#eadde1" />
         <Controls position="bottom-left" showInteractive={false} />
@@ -240,8 +313,29 @@ export function FamilyTreeCanvas({ tree }: FamilyTreeCanvasProps) {
           <span><i className="sibling-line" />Sibling link</span>
           <span><i className="other-line" />Other recorded link</span>
           <span><i className="external-family" />Connected family</span>
-          <small>Click a person to highlight their direct recorded links.</small>
+          <small>Select a connection line to inspect its pair. Select a person to highlight direct links.</small>
         </Panel>
+        {selectedEdge && (
+          <Panel position="top-right" className="graph-detail graph-edge-detail">
+            <button
+              type="button"
+              aria-label="Close connection details"
+              onClick={() => setSelectedEdgeId(null)}
+            >
+              <X size={15} />
+            </button>
+            <span>Recorded connection</span>
+            <strong>{selectedEdge.label}</strong>
+            <small>
+              {selectedEdgePeople[0]?.label ?? "Person"} and {selectedEdgePeople[1]?.label ?? "Person"}
+            </small>
+            {verifyHref && (
+              <Link href={verifyHref} className="graph-verify-link">
+                Verify this pair <ArrowUpRight size={15} />
+              </Link>
+            )}
+          </Panel>
+        )}
         {selectedNode && (
           <Panel position="top-right" className="graph-detail">
             <button

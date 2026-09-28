@@ -21,13 +21,79 @@ export function PersonNode({ data, selected }: NodeProps<PersonGraphNode>) {
         (selected ? " selected" : "")
       }
     >
-      <Handle type="target" position={Position.Top} isConnectable={false} />
+      <Handle
+        type="source"
+        id="spouse-source-left"
+        position={Position.Left}
+        isConnectable={false}
+        className="graph-spouse-handle"
+      />
+      <Handle
+        type="target"
+        id="spouse-target-left"
+        position={Position.Left}
+        isConnectable={false}
+        className="graph-spouse-handle"
+      />
+      <Handle
+        type="source"
+        id="spouse-source-right"
+        position={Position.Right}
+        isConnectable={false}
+        className="graph-spouse-handle"
+      />
+      <Handle
+        type="target"
+        id="spouse-target-right"
+        position={Position.Right}
+        isConnectable={false}
+        className="graph-spouse-handle"
+      />
+      <Handle
+        type="source"
+        id="spouse-source-top"
+        position={Position.Top}
+        isConnectable={false}
+        className="graph-spouse-handle"
+      />
+      <Handle
+        type="target"
+        id="spouse-target-top"
+        position={Position.Top}
+        isConnectable={false}
+        className="graph-spouse-handle"
+      />
+      <Handle
+        type="source"
+        id="spouse-source-bottom"
+        position={Position.Bottom}
+        isConnectable={false}
+        className="graph-spouse-handle"
+      />
+      <Handle
+        type="target"
+        id="spouse-target-bottom"
+        position={Position.Bottom}
+        isConnectable={false}
+        className="graph-spouse-handle"
+      />
+      <Handle
+        type="target"
+        id="relationship-target"
+        position={Position.Top}
+        isConnectable={false}
+      />
       <span className="graph-person-icon"><UserRound size={17} /></span>
       <span className="graph-person-copy">
         <strong>{data.name}</strong>
         <small title={familyLabel}>{familyLabel}</small>
       </span>
-      <Handle type="source" position={Position.Bottom} isConnectable={false} />
+      <Handle
+        type="source"
+        id="relationship-source"
+        position={Position.Bottom}
+        isConnectable={false}
+      />
     </div>
   );
 }
